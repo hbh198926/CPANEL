@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hala Bissau — Control Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#262262;--dn:#1a1748;--gold:#f8bc1a;
+  --cream:#faf7f0;--light:#f0f2f8;--sf:#fff;
+  --mid:#64748b;--brd:#e2e8f0;--ch:#1c1c2e;
+  --g:#10b981;--r:#ef4444;--b:#3b82f6;--o:#f59e0b;--p:#8b5cf6;
+  --sw:220px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Jost',sans-serif;font-size:13px;color:var(--ch);}
+/* ── SHELL ── */
+#app{display:flex;width:100vw;height:100vh;overflow:hidden;}
+/* ── SIDEBAR ── */
+#sb{width:var(--sw);min-width:var(--sw);height:100%;background:var(--navy);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;flex-shrink:0;transition:width .25s,min-width .25s;}
+#sb.col{width:52px;min-width:52px;}
+#sb.col .lbl,#sb.col .sbadge,#sb.col .sbi-lbl,#sb.col .sbh-tx{display:none;}
+#sb.col .sbi{padding:10px;justify-content:center;}
+.sbh{display:flex;align-items:center;gap:10px;padding:18px 14px 14px;}
+.sbh-ico{width:32px;height:32px;border-radius:50%;background:rgba(248,188,26,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sbh-ico svg{width:15px;height:15px;fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.sbh-tx{display:flex;flex-direction:column;}
+.sbh-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.4px;}
+.sbh-sub{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:1.8px;text-transform:uppercase;margin-top:1px;}
+.lbl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28);padding:8px 16px 3px;display:block;}
+.sbi{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;color:rgba(255,255,255,.5);font-size:12.5px;transition:background .15s,color .15s;border-left:2px solid transparent;user-select:none;}
+.sbi:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85);}
+.sbi.on{background:rgba(248,188,26,.1);color:#fff;border-left-color:var(--gold);}
+.sbi svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.sbi-lbl{flex:1;}
+.sbadge{background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;}
+.sb-div{height:1px;background:rgba(255,255,255,.07);margin:6px 12px;}
+.sb-bot{margin-top:auto;padding:6px 0 10px;border-top:1px solid rgba(255,255,255,.07);}
+/* ── MAIN ── */
+#main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--light);}
+/* TICKER */
+#ticker{height:32px;flex-shrink:0;background:linear-gradient(90deg,var(--navy),var(--dn));display:flex;align-items:center;padding:0 18px;gap:18px;overflow:hidden;}
+.tk{display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
+.tk-l{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.38);}
+.tk-v{font-size:12px;font-weight:600;color:#fff;}
+.tk-sep{width:1px;height:12px;background:rgba(255,255,255,.15);flex-shrink:0;}
+/* TOPBAR */
+#topbar{height:52px;flex-shrink:0;background:var(--sf);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 20px;gap:10px;}
+#mbtoggle{background:none;border:none;cursor:pointer;padding:5px;display:flex;align-items:center;}
+#mbtoggle svg{width:17px;height:17px;fill:none;stroke:var(--mid);stroke-width:1.8;stroke-linecap:round;}
+.tb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--navy);flex:1;}
+.tb-date{font-size:11px;color:var(--mid);white-space:nowrap;}
+.tb-bell{position:relative;cursor:pointer;padding:5px;}
+.tb-bell svg{width:17px;height:17px;fill:none;stroke:var(--mid);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.tb-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--r);border:1.5px solid #fff;}
+.tb-av{width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.tb-un{font-size:12.5px;font-weight:600;color:var(--navy);}
+.tb-role{font-size:10px;color:var(--mid);}
+/* CONTENT */
+#content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 22px;}
+.page{display:none;}
+.page.on{display:block;}
+/* SHARED COMPONENTS */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+.sh-t{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--navy);}
+.sh-s{font-size:11.5px;color:var(--mid);margin-top:2px;}
+.sh-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+/* KPI */
+.krow{display:grid;gap:11px;margin-bottom:18px;}
+.kpi{background:var(--sf);border:1px solid var(--brd);padding:14px;border-left:3px solid var(--kc,var(--navy));}
+.kpi-l{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
+.kpi-v{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--navy);line-height:1;}
+.kpi-s{font-size:11px;color:var(--mid);margin-top:3px;display:flex;gap:5px;}
+.up{color:var(--g);font-weight:600;}.dn2{color:var(--r);font-weight:600;}
+/* TABLE */
+.tw{background:var(--sf);border:1px solid var(--brd);margin-bottom:16px;overflow:hidden;}
+.tw table{width:100%;border-collapse:collapse;}
+.tw th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);background:var(--cream);border-bottom:1px solid var(--brd);white-space:nowrap;}
+.tw td{padding:9px 12px;border-bottom:1px solid var(--brd);font-size:12.5px;vertical-align:middle;}
+.tw tr:last-child td{border-bottom:none;}
+.tw tr:hover td{background:rgba(248,188,26,.025);}
+.tbar{display:flex;gap:7px;padding:9px 12px;border-bottom:1px solid var(--brd);flex-wrap:wrap;align-items:center;}
+.tsrch{display:flex;align-items:center;gap:6px;flex:1;min-width:160px;border:1px solid var(--brd);padding:0 9px;background:var(--cream);}
+.tsrch svg{width:12px;height:12px;fill:none;stroke:var(--mid);stroke-width:2;flex-shrink:0;}
+.tsrch input{flex:1;border:none;outline:none;font-family:inherit;font-size:12px;background:transparent;padding:6px 0;}
+.tsel{border:1px solid var(--brd);padding:6px 9px;font-family:inherit;font-size:12px;background:var(--cream);outline:none;cursor:pointer;}
+.tfoot{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--brd);font-size:12px;color:var(--mid);}
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--brd);margin-bottom:14px;}
+.tab{padding:7px 15px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:500;color:var(--mid);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;}
+.tab.on{color:var(--navy);border-bottom-color:var(--navy);font-weight:600;}
+/* BUTTONS */
+.btn{padding:6px 13px;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:opacity .15s;}
+.btn:hover{opacity:.82;}
+.bn{background:var(--navy);color:#fff;}
+.bg{background:var(--gold);color:var(--navy);}
+.bo{background:var(--sf);color:var(--navy);border:1px solid var(--brd);}
+.br{background:var(--sf);color:var(--r);border:1px solid #fecaca;}
+.bsm{padding:3px 9px;font-size:11px;}
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600;white-space:nowrap;}
+.dg{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.db{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.do{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.dr{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.dy{background:rgba(248,188,26,.12);color:#92400e;border:1px solid rgba(248,188,26,.3);}
+.dn3{background:rgba(38,34,98,.08);color:var(--navy);border:1px solid rgba(38,34,98,.15);}
+.dgr{background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;}
+.dp{background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe;}
+/* FORMS */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.fg label{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);}
+.fi{border:1px solid var(--brd);padding:8px 10px;font-family:inherit;font-size:13px;background:var(--cream);outline:none;width:100%;}
+.fi:focus{border-color:var(--navy);}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* MODALS */
+.mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
+.mov.open{display:flex;}
+.modal{background:#fff;width:min(560px,94vw);max-height:86vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.mhd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--brd);background:var(--cream);}
+.mhd-t{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--navy);}
+.mx{background:none;border:none;font-size:20px;cursor:pointer;color:var(--mid);padding:0 4px;line-height:1;}
+.mbody{padding:16px 18px;}
+.mfoot{display:flex;justify-content:flex-end;gap:7px;padding:12px 18px;border-top:1px solid var(--brd);}
+/* TOAST */
+#toastC{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px;}
+.toast{background:#fff;border:1px solid var(--brd);border-left:3px solid var(--navy);padding:9px 14px;font-size:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);min-width:220px;max-width:300px;animation:tIn .2s ease;}
+@keyframes tIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+/* CALENDAR */
+.cal-wrap{background:var(--sf);border:1px solid var(--brd);overflow:hidden;}
+.cal-dhr{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--brd);}
+.cal-dh{padding:7px;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);background:var(--cream);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.cd{min-height:90px;padding:7px;border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);cursor:default;}
+.cd-e{min-height:90px;background:var(--cream);border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);}
+.cd:nth-child(7n),.cd-e:nth-child(7n){border-right:none;}
+.cd-n{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+.cd.tod .cd-n{background:var(--navy);color:#fff;border-radius:50%;}
+.cd.wknd{background:rgba(248,188,26,.02);}
+.cev{font-size:10px;padding:2px 6px;margin-bottom:2px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.cev:hover{opacity:.8;}
+/* RATE CALENDAR */
+.rc-wrap{background:var(--sf);border:1px solid var(--brd);}
+.rc-dhr{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--brd);}
+.rc-dh{padding:6px;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);background:var(--cream);}
+.rc-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.rcc{min-height:66px;padding:6px;border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);cursor:pointer;transition:background .1s;}
+.rcc:hover{background:rgba(248,188,26,.06);}
+.rcc:nth-child(7n){border-right:none;}
+.rcc.past{opacity:.4;cursor:default;}
+.rcc.wknd{background:rgba(248,188,26,.04);}
+.rcc.sel{box-shadow:inset 0 0 0 2px var(--navy);}
+.rcc.cls{background:#fef2f2;}
+.rc-e{min-height:66px;background:var(--cream);border-right:1px solid var(--brd);border-bottom:1px solid var(--brd);}
+.rcdn{font-size:11px;font-weight:600;color:var(--navy);}
+.rcpr{font-size:12px;font-weight:700;margin:2px 0;}
+.p-lo{color:#059669;}.p-mi{color:#b45309;}.p-hi{color:#dc2626;}.p-cl{color:#dc2626;font-size:9.5px;}
+.rcav{font-size:9px;color:var(--mid);}
+/* EDIT PANEL */
+.ep{background:var(--sf);border:1px solid var(--brd);position:sticky;top:0;}
+.ep-hd{padding:11px 13px;border-bottom:1px solid var(--brd);background:var(--cream);}
+.ep-hd-t{font-size:13px;font-weight:700;color:var(--navy);}
+.ep-hd-s{font-size:10.5px;color:var(--mid);margin-top:2px;}
+.ep-body{padding:12px 13px;}
+.ep-ph{padding:22px 0;text-align:center;color:var(--mid);}
+.ep-ph svg{width:28px;height:28px;fill:none;stroke:var(--brd);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 8px;display:block;}
+.ep-ph p{font-size:11.5px;line-height:1.6;}
+.pricebox{display:flex;align-items:center;border:1px solid var(--brd);background:var(--cream);}
+.pricebox-c{padding:7px 8px;font-size:10px;font-weight:700;color:var(--mid);border-right:1px solid var(--brd);}
+.pricebox input{flex:1;border:none;outline:none;padding:7px 8px;font-family:inherit;font-size:14px;font-weight:700;background:transparent;width:100%;}
+.ep-save{width:100%;padding:8px;background:var(--navy);color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:5px;}
+.ep-range{width:100%;padding:7px;background:#fff;color:var(--navy);border:1px solid var(--brd);font-family:inherit;font-size:11.5px;cursor:pointer;}
+/* INV CARDS */
+.igrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px;}
+.icard{background:var(--sf);border:1px solid var(--brd);padding:14px;border-left:3px solid var(--ic,var(--navy));}
+.ict{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:6px;}
+.icv{font-family:'Cormorant Garamond',serif;font-size:36px;color:var(--navy);line-height:1;}
+.icof{font-size:10.5px;color:var(--mid);margin-bottom:7px;}
+.icbar{height:4px;background:var(--brd);border-radius:2px;margin-bottom:6px;overflow:hidden;}
+.icbar-f{height:100%;border-radius:2px;}
+.icd{display:flex;gap:10px;font-size:10.5px;color:var(--mid);}
+/* POOL */
+.pbar{background:#e2e8f0;height:10px;border-radius:5px;overflow:hidden;margin-bottom:4px;}
+.pbar-f{height:100%;border-radius:5px;transition:width .4s;}
+/* STARS */
+.stars{display:flex;gap:2px;}
+.star{font-size:14px;cursor:pointer;color:var(--brd);transition:color .1s;}
+.star.on{color:var(--gold);}
+/* FEEDBACK CARD */
+.fbcard{background:var(--sf);border:1px solid var(--brd);padding:14px 16px;margin-bottom:10px;}
+.fbcard-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:10px;flex-wrap:wrap;}
+.fbcard-name{font-size:13px;font-weight:700;color:var(--navy);}
+.fbcard-src{font-size:10.5px;color:var(--mid);margin-top:2px;}
+.fbcard-text{font-size:12.5px;line-height:1.7;color:var(--ch);}
+.fbcard-reply{background:rgba(38,34,98,.04);border-left:2px solid var(--navy);padding:8px 10px;margin-top:8px;font-size:12px;color:var(--mid);line-height:1.6;}
+.fb-score{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--navy);font-weight:500;}
+
+/* ══ WCM STYLES ══ */
+.wcm-card{background:var(--sf);border:1px solid var(--brd);padding:20px;cursor:pointer;transition:all .2s;position:relative;}
+.wcm-card:hover{border-color:var(--gold);box-shadow:0 4px 20px rgba(0,0,0,.08);transform:translateY(-1px);}
+.wcm-card-icon{font-size:24px;margin-bottom:10px;}
+.wcm-card-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);font-weight:500;margin-bottom:5px;}
+.wcm-card-desc{font-size:11.5px;color:var(--mid);line-height:1.65;margin-bottom:12px;}
+.wcm-card-status{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 9px;display:inline-flex;align-items:center;gap:4px;}
+.wcm-s-ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.wcm-s-ok::before{content:"●";color:#10b981;}
+.wcm-s-changed{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.wcm-s-changed::before{content:"●";color:#f59e0b;}
+.wcm-s-warn{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.wcm-s-warn::before{content:"●";color:#ef4444;}
+
+/* Room / content editor cards */
+.ed-card{background:var(--sf);border:1px solid var(--brd);margin-bottom:14px;overflow:hidden;}
+.ed-card-head{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ed-card-head-title{font-family:'Playfair Display',serif;font-size:14px;color:#fff;font-weight:400;}
+.ed-card-head-actions{display:flex;gap:6px;align-items:center;}
+.ed-card-body{padding:16px 18px;}
+.ed-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.ed-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mid);}
+.fg label .req{color:var(--r);margin-left:2px;}
+.fi{border:1px solid var(--brd);padding:7px 10px;font-family:inherit;font-size:12.5px;background:var(--cream);outline:none;transition:border-color .18s;width:100%;}
+.fi:focus{border-color:var(--navy);}
+.fi-ta{resize:vertical;min-height:80px;line-height:1.65;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-label{font-size:12.5px;color:var(--navy);font-weight:500;}
+.toggle-sub{font-size:11px;color:var(--mid);}
+.sw-wrap{position:relative;width:36px;height:20px;flex-shrink:0;}
+.sw-inp{opacity:0;width:100%;height:100%;position:absolute;cursor:pointer;margin:0;z-index:1;}
+.sw-track{position:absolute;inset:0;background:#cbd5e1;border-radius:10px;transition:background .2s;}
+.sw-track::after{content:'';position:absolute;width:14px;height:14px;top:3px;left:3px;background:#fff;border-radius:50%;transition:transform .2s;}
+.sw-inp:checked+.sw-track{background:var(--gold);}
+.sw-inp:checked+.sw-track::after{transform:translateX(16px);}
+
+/* gallery grid */
+.gallery-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.gallery-thumb{position:relative;aspect-ratio:4/3;overflow:hidden;border:1px solid var(--brd);background:var(--cream);}
+.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.gallery-thumb-overlay{position:absolute;inset:0;background:rgba(38,34,98,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;transition:opacity .2s;}
+.gallery-thumb:hover .gallery-thumb-overlay{opacity:1;}
+.gallery-thumb-del{background:var(--r);color:#fff;border:none;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.08em;}
+.gallery-thumb-edit{background:var(--gold);color:var(--navy);border:none;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.08em;}
+.gallery-thumb-pos{position:absolute;top:6px;left:6px;background:var(--navy);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;}
+
+/* SEO score bar */
+.seo-score{height:8px;border-radius:4px;overflow:hidden;background:var(--brd);margin-top:6px;}
+.seo-score-fill{height:100%;border-radius:4px;transition:width .4s;}
+.char-count{font-size:10px;color:var(--mid);text-align:right;margin-top:3px;}
+.char-count.warn{color:var(--o);}
+.char-count.over{color:var(--r);}
+
+/* preview badge */
+.live-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;background:rgba(16,185,129,.1);color:#166534;border:1px solid rgba(16,185,129,.25);}
+.draft-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;background:rgba(245,158,11,.1);color:#92400e;border:1px solid rgba(245,158,11,.25);}
+
+/* feature chips editable */
+.chip-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.chip-item{display:inline-flex;align-items:center;gap:4px;background:var(--light);border:1px solid var(--brd);padding:3px 9px;font-size:11px;color:var(--navy);}
+.chip-del{background:none;border:none;color:var(--mid);cursor:pointer;font-size:13px;line-height:1;padding:0;transition:color .15s;}
+.chip-del:hover{color:var(--r);}
+.chip-add{background:none;border:1px dashed var(--brd);padding:3px 9px;font-size:11px;color:var(--mid);cursor:pointer;transition:all .15s;}
+.chip-add:hover{border-color:var(--gold);color:var(--gold);}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<div id="sb">
+  <div class="sbh">
+    <div class="sbh-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div class="sbh-tx"><span class="sbh-name">HALA BISSAU</span><span class="sbh-sub">Control Panel</span></div>
+  </div>
+  <span class="lbl">Overview</span>
+  <div class="sbi on" id="sbi-dash" onclick="nav('dash',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="sbi-lbl">Dashboard</span></div>
+  <span class="lbl">Reservations</span>
+  <div class="sbi" id="sbi-res" onclick="nav('res',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="sbi-lbl">All Reservations</span><span class="sbadge">12</span></div>
+  <div class="sbi" id="sbi-inv" onclick="nav('inv',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span class="sbi-lbl">Room Inventory</span></div>
+  <div class="sbi" id="sbi-bcal" onclick="nav('bcal',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M16 2v4M8 2v4"/></svg><span class="sbi-lbl">Booking Calendar</span></div>
+  <span class="lbl">Rates</span>
+  <div class="sbi" id="sbi-rcal" onclick="nav('rcal',this)"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span class="sbi-lbl">Rate Calendar</span></div>
+  <div class="sbi" id="sbi-rplans" onclick="nav('rplans',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><span class="sbi-lbl">Rate Plans</span></div>
+  <span class="lbl">Guest Relations</span>
+  <div class="sbi" id="sbi-guests" onclick="nav('guests',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg><span class="sbi-lbl">Guests &amp; CRM</span></div>
+  <span class="lbl">Operations</span>
+  <div class="sbi" id="sbi-ops" onclick="nav('ops',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg><span class="sbi-lbl">All Operations</span><span class="sbadge" id="opsBadge"></span></div>
+  <span class="lbl">Finance</span>
+  <div class="sbi" id="sbi-pool" onclick="nav('pool',this)"><svg viewBox="0 0 24 24"><path d="M2 12h20M2 12c0-4 4-6 6-4s4 4 8 0 6 0 4 4"/><path d="M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></svg><span class="sbi-lbl">Pool Tickets</span></div>
+  <div class="sbi" id="sbi-rpts" onclick="nav('rpts',this)"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="sbi-lbl">Reports &amp; Analytics</span></div>
+  <span class="lbl">Quality</span>
+  <div class="sbi" id="sbi-fb" onclick="nav('fb',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span class="sbi-lbl">Guest Feedback</span><span class="sbadge" id="fbBadge">3</span></div>
+  <span class="lbl">Website</span>
+  <div class="sbi" id="sbi-wcm" onclick="nav('wcm',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span class="sbi-lbl">Website Content</span></div>
+  <div class="sbi" id="sbi-rooms-ed" onclick="nav('rooms-ed',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span class="sbi-lbl">Rooms &amp; Suites</span></div>
+  <div class="sbi" id="sbi-dining-ed" onclick="nav('dining-ed',this)"><svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg><span class="sbi-lbl">Dining &amp; Bars</span></div>
+  <div class="sbi" id="sbi-events-ed" onclick="nav('events-ed',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="sbi-lbl">Meetings &amp; Events</span></div>
+  <div class="sbi" id="sbi-offers-ed" onclick="nav('offers-ed',this)"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span class="sbi-lbl">Special Offers</span></div>
+  <div class="sbi" id="sbi-gallery-ed" onclick="nav('gallery-ed',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span class="sbi-lbl">Photo Gallery</span></div>
+  <div class="sbi" id="sbi-seo-ed" onclick="nav('seo-ed',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span class="sbi-lbl">SEO &amp; Meta</span></div>
+  <div class="sb-div"></div>
+  <div class="sb-bot">
+    <div class="sbi" onclick="doLogout()" style="color:rgba(255,255,255,.3);">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      <span class="sbi-lbl">Logout</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="ticker">
+    <div class="tk"><span class="tk-l">Occupancy</span><span class="tk-v">78.4%</span></div><div class="tk-sep"></div>
+    <div class="tk"><span class="tk-l">Revenue Today</span><span class="tk-v">XOF 4.8M</span></div><div class="tk-sep"></div>
+    <div class="tk"><span class="tk-l">Available</span><span class="tk-v" id="tkAv">36</span></div><div class="tk-sep"></div>
+    <div class="tk"><span class="tk-l">Check-ins Today</span><span class="tk-v">14</span></div><div class="tk-sep"></div>
+    <div class="tk"><span class="tk-l">ADR</span><span class="tk-v">XOF 218k</span></div><div class="tk-sep"></div>
+    <div class="tk"><span class="tk-l">Avg Rating</span><span class="tk-v" id="tkRating">4.6 ★</span></div>
+  </div>
+  <div id="topbar">
+    <button id="mbtoggle" onclick="toggleSB()"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <div class="tb-title" id="tbTitle">Dashboard</div>
+    <div class="tb-date" id="tbDate"></div>
+    <div class="tb-bell"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><div class="tb-dot"></div></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="tb-av">AD</div>
+      <div><div class="tb-un">Admin</div><div class="tb-role">Super Admin</div></div>
+    </div>
+  </div>
+  <div id="content">
+<!-- DASHBOARD -->
+<div class="page on" id="pg-dash">
+  <div class="sh"><div><div class="sh-t">Dashboard</div><div class="sh-s" id="dashDate"></div></div><button class="btn bg" onclick="openM('mRes')">+ New Reservation</button></div>
+  <div class="krow" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi" style="--kc:var(--gold)"><div class="kpi-l">Revenue Today</div><div class="kpi-v">XOF 4.8M</div><div class="kpi-s"><span class="up">↑12%</span><span>vs yesterday</span></div></div>
+    <div class="kpi" style="--kc:var(--g)"><div class="kpi-l">Occupancy</div><div class="kpi-v">78.4%</div><div class="kpi-s"><span class="up">↑5%</span><span>vs last week</span></div></div>
+    <div class="kpi" style="--kc:var(--b)"><div class="kpi-l">Check-ins Today</div><div class="kpi-v">14</div><div class="kpi-s"><span style="color:var(--mid)">3 departures</span></div></div>
+    <div class="kpi" style="--kc:var(--gold)"><div class="kpi-l">Avg Guest Rating</div><div class="kpi-v" id="dashRating">4.6 ★</div><div class="kpi-s"><span style="color:var(--mid)">from 48 reviews</span></div></div>
+  </div>
+  <div class="sh" style="margin-bottom:10px;"><div class="sh-t" style="font-size:17px;">Recent Reservations</div><button class="btn bo bsm" onclick="nav('res',document.getElementById('sbi-res'))">View All</button></div>
+  <div class="tw"><table><thead><tr><th>Ref #</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Rate Plan</th><th>Total (XOF)</th><th>Status</th></tr></thead><tbody id="dashTbl"></tbody></table></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div><div class="sh-t" style="font-size:17px;margin-bottom:10px;">Check-ins Today</div><div class="tw" style="margin-bottom:0"><table><thead><tr><th>Guest</th><th>Room</th><th>Nights</th><th>Status</th></tr></thead><tbody id="dashCI"></tbody></table></div></div>
+    <div><div class="sh-t" style="font-size:17px;margin-bottom:10px;">Latest Feedback</div><div id="dashFB"></div></div>
+  </div>
+</div>
+
+<!-- ALL RESERVATIONS -->
+<div class="page" id="pg-res">
+  <div class="sh"><div><div class="sh-t">All Reservations</div><div class="sh-s">All bookings for Hala Bissau Hotel</div></div><div class="sh-r"><button class="btn bo" onclick="toast('Exporting…','info')">Export CSV</button><button class="btn bg" onclick="openM('mRes')">+ New Reservation</button></div></div>
+  <div class="tabs" id="resTabs">
+    <button class="tab on" onclick="resTab(this,'all')">All <span style="font-size:10px;color:var(--mid);">(12)</span></button>
+    <button class="tab" onclick="resTab(this,'confirmed')">Confirmed</button>
+    <button class="tab" onclick="resTab(this,'checkin')">Check-in Today</button>
+    <button class="tab" onclick="resTab(this,'checkout')">Check-out Today</button>
+    <button class="tab" onclick="resTab(this,'pending')">Pending</button>
+    <button class="tab" onclick="resTab(this,'cancelled')">Cancelled</button>
+  </div>
+  <div class="tw">
+    <div class="tbar">
+      <div class="tsrch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input placeholder="Search guest, ref, room…" oninput="srchRes(this.value)"></div>
+      <select class="tsel" onchange="filterRes('room',this.value)"><option value="">All Room Types</option><option>Standard Room</option><option>Standard + Balcony</option><option>Junior Suite</option><option>Presidential Suite</option></select>
+      <select class="tsel" onchange="filterRes('rate',this.value)"><option value="">All Rate Plans</option><option>Flexible Rate</option><option>B&amp;B Rate</option><option>Long Stay MMP</option><option>Corporate Rate</option><option>Government &amp; Military</option></select>
+    </div>
+    <table><thead><tr><th><input type="checkbox" style="accent-color:var(--navy)"></th><th>Ref #</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Nights</th><th>Rate Plan</th><th>Total (XOF)</th><th>Status</th><th>Actions</th></tr></thead><tbody id="resTbl"></tbody></table>
+    <div class="tfoot"><span id="resInfo"></span></div>
+  </div>
+</div>
+
+<!-- ROOM INVENTORY -->
+<div class="page" id="pg-inv">
+  <div class="sh"><div><div class="sh-t">Room Inventory</div><div class="sh-s">Current availability by room type</div></div><button class="btn bg" onclick="openInvEdit()">Edit Allocation</button></div>
+  <div class="igrid" id="invGrid"></div>
+  <div class="sh" style="margin-bottom:10px;"><div class="sh-t" style="font-size:17px;">Allocation Log</div></div>
+  <div class="tw"><table><thead><tr><th>Date / Time</th><th>Room Type</th><th>Action</th><th>Change</th><th>New Available</th><th>Changed By</th></tr></thead><tbody id="invLog"></tbody></table></div>
+</div>
+
+<!-- BOOKING CALENDAR -->
+<div class="page" id="pg-bcal">
+  <div class="sh">
+    <div><div class="sh-t">Booking Calendar</div><div class="sh-s" id="calLbl"></div></div>
+    <div class="sh-r">
+      <button class="btn bo" onclick="calNav(-1)">← Prev</button>
+      <button class="btn bo" onclick="calNav(1)">Next →</button>
+      <button class="btn bg" onclick="openM('mRes')">+ Add Booking</button>
+    </div>
+  </div>
+  <div class="cal-wrap">
+    <div class="cal-dhr"><div class="cal-dh">Sun</div><div class="cal-dh">Mon</div><div class="cal-dh">Tue</div><div class="cal-dh">Wed</div><div class="cal-dh">Thu</div><div class="cal-dh">Fri</div><div class="cal-dh">Sat</div></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;padding:9px 12px;background:var(--sf);border:1px solid var(--brd);border-top:none;font-size:11.5px;color:var(--mid);">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:9px;background:#f8bc1a;display:inline-block;border-radius:2px;opacity:.7;"></span>Check-in</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:9px;background:#10b981;display:inline-block;border-radius:2px;opacity:.7;"></span>In-house</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:9px;background:#ef4444;display:inline-block;border-radius:2px;opacity:.7;"></span>Check-out</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:9px;background:#8b5cf6;display:inline-block;border-radius:2px;opacity:.7;"></span>Pending</span>
+  </div>
+</div>
+
+<!-- RATE CALENDAR -->
+<div class="page" id="pg-rcal">
+  <div class="sh">
+    <div><div class="sh-t">Rate Calendar</div><div class="sh-s">Click any date to set or edit rates</div></div>
+    <div class="sh-r">
+      <select id="rcPlanSel" onchange="rcPlanChange(this.value)" class="tsel"><option value="FLEX">Flexible Rate</option><option value="BB">Bed &amp; Breakfast</option><option value="ADV7">Advance Purchase (7d)</option><option value="MMP">Long Stay MMP (3N+)</option><option value="LONG5">Long Stay (5N+)</option><option value="GOVT">Government &amp; Military</option><option value="CORP">Corporate Rate</option><option value="GRP">Group Rate</option></select>
+      <select id="rcRoomSel" onchange="rcRoomChange(this.value)" class="tsel"><option value="std">Standard Room</option><option value="balc">Std + Balcony</option><option value="jr">Junior Suite</option><option value="pres">Presidential Suite</option></select>
+      <button class="btn bo" onclick="rcNav(-1)">← Prev</button>
+      <button class="btn bo" onclick="rcNav(1)">Next →</button>
+      <button class="btn bg" onclick="toast('All rates saved to PMS ✓','success')">Save All</button>
+    </div>
+  </div>
+  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:10px;" id="rcLabel"></div>
+  <div style="display:grid;grid-template-columns:1fr 240px;gap:14px;align-items:start;">
+    <div><div class="rc-wrap"><div class="rc-dhr"><div class="rc-dh">Sun</div><div class="rc-dh">Mon</div><div class="rc-dh">Tue</div><div class="rc-dh">Wed</div><div class="rc-dh">Thu</div><div class="rc-dh">Fri</div><div class="rc-dh">Sat</div></div><div class="rc-grid" id="rcGrid"></div></div></div>
+    <div class="ep" id="rcEp"><div class="ep-hd"><div class="ep-hd-t">Set Rate</div><div class="ep-hd-s" id="rcEpSub">Select a date</div></div><div class="ep-body" id="rcEpBody"><div class="ep-ph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><p>Click any future date to edit rate &amp; availability.</p></div></div></div>
+  </div>
+</div>
+
+<!-- RATE PLANS -->
+<div class="page" id="pg-rplans">
+  <div class="sh"><div><div class="sh-t">Rate Plans</div><div class="sh-s">Click a plan name for the full policy sheet</div></div><button class="btn bg" onclick="openNewRpM()">+ Add Rate Plan</button></div>
+  <div class="tw" id="rpListWrap"><table><thead><tr><th>Rate Plan Name</th><th>Code</th><th>Type</th><th>Cancellation</th><th>Min Stay</th><th>Commissionable</th><th>Active</th><th>Actions</th></tr></thead><tbody id="rpTbl"></tbody></table></div>
+  <div id="rpdView" style="display:none;"></div>
+</div>
+
+<!-- GUESTS & CRM -->
+<div class="page" id="pg-guests">
+  <div class="sh"><div><div class="sh-t">Guests &amp; CRM</div><div class="sh-s">Guest profiles &amp; preferences</div></div><div class="sh-r"><button class="btn bo" onclick="toast('Exporting…','info')">Export CSV</button><button class="btn bg" onclick="openM('mNewGuest')">+ Add Guest</button></div></div>
+  <div class="tw">
+    <div class="tbar">
+      <div class="tsrch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input placeholder="Search name, email, nationality…" oninput="srchGuest(this.value)"></div>
+      <select class="tsel" onchange="filterGuestSeg(this.value)"><option value="">All Segments</option><option>Business</option><option>Leisure</option><option>Government</option><option>NGO / Embassy</option><option>Corporate</option><option>VIP</option></select>
+    </div>
+    <table><thead><tr><th>Guest</th><th>Nationality</th><th>Segment</th><th>Visits</th><th>Last Stay</th><th>Total Spent</th><th>Actions</th></tr></thead><tbody id="guestTbl"></tbody></table>
+    <div class="tfoot"><span id="guestInfo"></span></div>
+  </div>
+  <div id="guestDetail" style="display:none;margin-top:4px;"></div>
+</div>
+
+<!-- OPERATIONS -->
+<div class="page" id="pg-ops">
+  <div class="sh"><div><div class="sh-t">Operations</div><div class="sh-s">Housekeeping · Maintenance · F&amp;B · Guest Relations · Front Office</div></div><div class="sh-r"><button class="btn bg" onclick="openM('mNewOps')">+ New Case</button></div></div>
+  <div class="krow" style="grid-template-columns:repeat(5,1fr)" id="opsKPIs"></div>
+  <div class="tw">
+    <div class="tbar">
+      <div class="tsrch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input placeholder="Search guest, room, case…" oninput="filterOps('s',this.value)"></div>
+      <select class="tsel" onchange="filterOps('d',this.value)"><option value="">All Departments</option><option>Housekeeping</option><option>Maintenance</option><option>Food &amp; Beverage</option><option>Front Office</option><option>Guest Relations</option></select>
+      <select class="tsel" onchange="filterOps('st',this.value)"><option value="">All Status</option><option>Open</option><option>In Progress</option><option>Completed</option></select>
+      <select class="tsel" onchange="filterOps('p',this.value)"><option value="">All Priority</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
+      <button onclick="resetOpsF()" class="btn bo bsm">Reset</button>
+    </div>
+    <div style="overflow-x:auto;"><table><thead><tr><th>Case No.</th><th>Guest / Area</th><th>Room</th><th>Department</th><th>Type</th><th>Description</th><th>Priority</th><th>Assigned To</th><th>Reported</th><th>Status</th><th>Update</th></tr></thead><tbody id="opsTbl"></tbody></table></div>
+    <div class="tfoot"><span id="opsCount"></span><div id="opsPg" style="display:flex;gap:3px;"></div></div>
+  </div>
+</div>
+
+<!-- POOL TICKETS -->
+<div class="page" id="pg-pool">
+  <div class="sh"><div><div class="sh-t">Pool Tickets</div><div class="sh-s">Daily visitor management &amp; ticket sales</div></div><div class="sh-r"><button class="btn bg" onclick="openM('mTicket')">+ Sell Ticket</button><button class="btn bo" onclick="toast('Report exported','ok')">Export Report</button></div></div>
+  <div class="krow" style="grid-template-columns:repeat(4,1fr)" id="poolKPIs"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Ticket Prices &amp; Sales</div>
+      <table><thead><tr><th>Type</th><th>Price (XOF)</th><th>Sold</th><th>Revenue</th></tr></thead><tbody>
+        <tr><td>Adult Day Pass</td><td>15,000</td><td>3</td><td>XOF 45,000</td></tr>
+        <tr><td>Child (under 12)</td><td>8,000</td><td>3</td><td>XOF 24,000</td></tr>
+        <tr><td>Hotel Guest</td><td>Complimentary</td><td>2</td><td>—</td></tr>
+        <tr><td>Hotel Guest + External</td><td>10,000</td><td>1</td><td>XOF 10,000</td></tr>
+        <tr><td>Monthly Pass</td><td>120,000</td><td>0</td><td>—</td></tr>
+      </tbody></table>
+      <div style="padding:9px 12px;border-top:1px solid var(--brd);display:flex;justify-content:space-between;font-size:13px;font-weight:700;"><span>Total Today</span><span style="color:var(--navy);">XOF 79,000</span></div>
+    </div>
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Pool Capacity</div>
+      <div style="padding:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;"><span>Current Visitors</span><span id="poolCapDisp" style="font-weight:700;color:var(--navy);">9 / 80</span></div>
+        <div class="pbar"><div class="pbar-f" id="poolFill" style="width:11%;background:#10b981;"></div></div>
+        <div style="background:var(--cream);padding:16px;border:1px solid var(--brd);text-align:center;margin-top:10px;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mid);margin-bottom:4px;">In Pool Now</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:52px;color:var(--navy);line-height:1;" id="poolCV">9</div>
+          <div style="font-size:11px;color:var(--mid);margin-top:3px;">of 80 maximum</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;">
+          <button onclick="poolIn()" style="background:var(--g);color:#fff;border:none;padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">+ Entry</button>
+          <button onclick="poolOut()" style="background:var(--r);color:#fff;border:none;padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">− Exit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tw"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Today's Log</div><table><thead><tr><th>Time</th><th>Type</th><th>Visitors</th><th>Room / Name</th><th>Amount (XOF)</th><th>Sold By</th></tr></thead><tbody id="poolLog"></tbody></table></div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="pg-rpts">
+  <div class="sh"><div><div class="sh-t">Reports &amp; Analytics</div></div><div class="sh-r"><select class="tsel" onchange="buildRpts()"><option>Today</option><option selected>This Week</option><option>This Month</option><option>This Year</option></select><button class="btn bo" onclick="toast('Exporting…','info')">Export PDF</button></div></div>
+  <div class="krow" style="grid-template-columns:repeat(5,1fr)" id="rptKPIs"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Occupancy by Room Type</div><table><thead><tr><th>Room Type</th><th>Rooms</th><th>Occupied</th><th>Occ%</th><th>ADR (XOF)</th></tr></thead><tbody id="occTbl"></tbody></table></div>
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Revenue by Booking Source</div><table><thead><tr><th>Source</th><th>Bookings</th><th>Revenue (XOF)</th><th>Share</th></tr></thead><tbody id="srcTbl"></tbody></table></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Guest Nationality</div><table><thead><tr><th>Country</th><th>Guests</th><th>Nights</th><th>%</th></tr></thead><tbody id="natTbl"></tbody></table></div>
+    <div class="tw" style="margin-bottom:0"><div style="padding:9px 12px;border-bottom:1px solid var(--brd);font-size:13px;font-weight:700;color:var(--navy);">Month-on-Month</div><table><thead><tr><th>Metric</th><th>This Month</th><th>Last Month</th><th>Change</th></tr></thead><tbody id="momTbl"></tbody></table></div>
+  </div>
+</div>
+
+<!-- GUEST FEEDBACK -->
+<div class="page" id="pg-fb">
+  <div class="sh">
+    <div><div class="sh-t">Guest Feedback</div><div class="sh-s">Manually log reviews from OTAs, TripAdvisor, emails &amp; in-house forms</div></div>
+    <div class="sh-r">
+      <select class="tsel" id="fbSrcFilter" onchange="buildFbList()"><option value="">All Sources</option><option>Booking.com</option><option>Expedia</option><option>TripAdvisor</option><option>Google</option><option>Direct / Email</option><option>In-house Form</option></select>
+      <select class="tsel" id="fbRatingFilter" onchange="buildFbList()"><option value="">All Ratings</option><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select>
+      <button class="btn bg" onclick="openM('mNewFb')">+ Log Feedback</button>
+    </div>
+  </div>
+  <!-- Score summary -->
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;background:var(--sf);border:1px solid var(--brd);padding:18px 20px;margin-bottom:16px;align-items:center;">
+    <div style="text-align:center;padding-right:20px;border-right:1px solid var(--brd);">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:56px;color:var(--navy);line-height:1;" id="fbOverallScore">4.6</div>
+      <div style="font-size:18px;color:var(--gold);margin:4px 0;" id="fbOverallStars">★★★★★</div>
+      <div style="font-size:11px;color:var(--mid);" id="fbTotalCount">48 reviews</div>
+    </div>
+    <div id="fbScoreBreakdown" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+  </div>
+  <!-- Feedback list -->
+  <div id="fbList"></div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+<!-- MODALS -->
+<div class="mov" id="mRes"><div class="modal"><div class="mhd"><div class="mhd-t">New Reservation</div><button class="mx" onclick="closeM('mRes')">✕</button></div><div class="mbody"><div class="fg2"><div class="fg"><label>First Name</label><input class="fi" id="rb_fn" placeholder="First name"></div><div class="fg"><label>Last Name</label><input class="fi" id="rb_ln"></div></div><div class="fg2"><div class="fg"><label>Email</label><input class="fi" type="email" id="rb_em"></div><div class="fg"><label>Phone</label><input class="fi" id="rb_ph"></div></div><div class="fg2"><div class="fg"><label>Check-in</label><input class="fi" type="date" id="rb_ci"></div><div class="fg"><label>Check-out</label><input class="fi" type="date" id="rb_co"></div></div><div class="fg2"><div class="fg"><label>Room Type</label><select class="fi" id="rb_rt"><option>Standard Room</option><option>Standard + Balcony</option><option>Junior Suite</option><option>Presidential Suite</option></select></div><div class="fg"><label>Rate Plan</label><select class="fi" id="rb_rp"><option>Flexible Rate</option><option>B&amp;B Rate</option><option>Long Stay MMP</option><option>Corporate Rate</option><option>Government &amp; Military</option></select></div></div><div class="fg2"><div class="fg"><label>Rate per Night (XOF)</label><input class="fi" type="number" id="rb_rate" placeholder="150000"></div><div class="fg"><label>Adults</label><select class="fi"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div></div><div class="fg"><label>Special Requests</label><textarea class="fi" rows="2"></textarea></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mRes')">Cancel</button><button class="btn bg" onclick="saveRes()">Confirm Reservation</button></div></div></div>
+
+<div class="mov" id="mNewGuest"><div class="modal"><div class="mhd"><div class="mhd-t">Add Guest Profile</div><button class="mx" onclick="closeM('mNewGuest')">✕</button></div><div class="mbody"><div class="fg2"><div class="fg"><label>First Name *</label><input class="fi" id="ng_fn"></div><div class="fg"><label>Last Name *</label><input class="fi" id="ng_ln"></div></div><div class="fg2"><div class="fg"><label>Email</label><input class="fi" type="email" id="ng_em"></div><div class="fg"><label>Phone</label><input class="fi" id="ng_ph"></div></div><div class="fg2"><div class="fg"><label>Nationality</label><input class="fi" id="ng_nat"></div><div class="fg"><label>Segment</label><select class="fi" id="ng_seg"><option>Business</option><option>Leisure</option><option>Government</option><option>NGO / Embassy</option><option>Corporate</option><option>VIP</option></select></div></div><div class="fg"><label>Preferences (comma separated)</label><input class="fi" id="ng_pref" placeholder="High floor, King bed…"></div><div class="fg"><label>Dietary</label><input class="fi" id="ng_diet"></div><div class="fg"><label>Notes</label><textarea class="fi" id="ng_notes" rows="2"></textarea></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mNewGuest')">Cancel</button><button class="btn bg" onclick="saveNewGuest()">Add Guest</button></div></div></div>
+
+<div class="mov" id="mEditInv"><div class="modal" style="max-width:520px;"><div class="mhd"><div class="mhd-t">Edit Room Allocation</div><button class="mx" onclick="closeM('mEditInv')">✕</button></div><div class="mbody" id="invEditBody"></div><div class="mfoot"><button class="btn bo" onclick="closeM('mEditInv')">Cancel</button><button class="btn bg" onclick="saveInvEdit()">Save</button></div></div></div>
+
+<div class="mov" id="mNewRp"><div class="modal"><div class="mhd"><div class="mhd-t" id="mNewRpT">Add Rate Plan</div><button class="mx" onclick="closeM('mNewRp')">✕</button></div><div class="mbody"><div class="fg2"><div class="fg"><label>Plan Name *</label><input class="fi" id="rp_nm"></div><div class="fg"><label>Rate Code *</label><input class="fi" id="rp_cd"></div></div><div class="fg2"><div class="fg"><label>Type</label><select class="fi" id="rp_ty"><option>Lowest Regular</option><option>Government</option><option>Corporate</option><option>Group Code</option></select></div><div class="fg"><label>Min Stay</label><select class="fi" id="rp_min"><option>1</option><option>2</option><option>3</option><option>5</option><option>7</option></select></div></div><div class="fg2"><div class="fg"><label>Commissionable</label><select class="fi" id="rp_co"><option value="yes">Yes</option><option value="no">No</option></select></div><div class="fg"><label>Cancel Days (or "non")</label><input class="fi" id="rp_cdays"></div></div><div class="fg"><label>Conditions</label><textarea class="fi" id="rp_cond" rows="2"></textarea></div><div class="fg"><label>Cancellation Note</label><textarea class="fi" id="rp_cnote" rows="2"></textarea></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mNewRp')">Cancel</button><button class="btn bg" onclick="saveRp()">Save</button></div></div></div>
+
+<div class="mov" id="mRcRange"><div class="modal" style="max-width:440px;"><div class="mhd"><div class="mhd-t">Apply to Date Range</div><button class="mx" onclick="closeM('mRcRange')">✕</button></div><div class="mbody"><div style="background:rgba(248,188,26,.08);border:1px solid rgba(248,188,26,.25);padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--navy);">Plan: <strong id="rrPlan">—</strong> · Room: <strong id="rrRoom">—</strong> · Rate: <strong id="rrPr">—</strong></div><div class="fg2"><div class="fg"><label>From</label><input class="fi" type="date" id="rr_from"></div><div class="fg"><label>To</label><input class="fi" type="date" id="rr_to"></div></div><div class="fg2"><div class="fg"><label>Days</label><select class="fi" id="rr_days"><option value="all">All days</option><option value="wd">Weekdays only</option><option value="we">Weekends only</option></select></div><div class="fg"><label>Availability</label><select class="fi" id="rr_av"><option value="open">Open</option><option value="limited">Limited</option><option value="closed">Stop Sell</option></select></div></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mRcRange')">Cancel</button><button class="btn bg" onclick="applyRcRange()">Apply</button></div></div></div>
+
+<div class="mov" id="mNewOps"><div class="modal"><div class="mhd"><div class="mhd-t">New Operations Case</div><button class="mx" onclick="closeM('mNewOps')">✕</button></div><div class="mbody"><div class="fg2"><div class="fg"><label>Department</label><select class="fi"><option>Housekeeping</option><option>Maintenance</option><option>Food &amp; Beverage</option><option>Front Office</option><option>Guest Relations</option></select></div><div class="fg"><label>Priority</label><select class="fi"><option>Normal</option><option>High</option><option>Urgent</option><option>Low</option></select></div></div><div class="fg2"><div class="fg"><label>Guest / Area</label><input class="fi" placeholder="Guest name or area"></div><div class="fg"><label>Room</label><input class="fi" placeholder="Room number"></div></div><div class="fg"><label>Description</label><textarea class="fi" rows="3" placeholder="Describe the case…"></textarea></div><div class="fg"><label>Assign To</label><select class="fi"><option>Housekeeping Team</option><option>João Engineer</option><option>F&amp;B Manager</option><option>Front Office</option><option>GM</option></select></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mNewOps')">Cancel</button><button class="btn bg" onclick="toast('Case created','ok');closeM('mNewOps')">Create Case</button></div></div></div>
+
+<div class="mov" id="mTicket"><div class="modal" style="max-width:400px;"><div class="mhd"><div class="mhd-t">Sell Pool Ticket</div><button class="mx" onclick="closeM('mTicket')">✕</button></div><div class="mbody"><div class="fg"><label>Ticket Type</label><select class="fi" id="tkt_type"><option value="15000">Adult Day Pass — XOF 15,000</option><option value="8000">Child (under 12) — XOF 8,000</option><option value="0">Hotel Guest — Complimentary</option><option value="10000">Hotel Guest + External — XOF 10,000</option><option value="120000">Monthly Pass — XOF 120,000</option></select></div><div class="fg2"><div class="fg"><label>Visitors</label><input class="fi" type="number" value="1" min="1" max="20"></div><div class="fg"><label>Room (if hotel guest)</label><input class="fi" placeholder="e.g. 304"></div></div><div class="fg"><label>Name / Notes</label><input class="fi"></div></div><div class="mfoot"><button class="btn bo" onclick="closeM('mTicket')">Cancel</button><button class="btn bg" onclick="sellTicket()">Sell Ticket</button></div></div></div>
+
+<div class="mov" id="mNewFb"><div class="modal"><div class="mhd"><div class="mhd-t">Log Guest Feedback</div><button class="mx" onclick="closeM('mNewFb')">✕</button></div><div class="mbody">
+  <div class="fg2"><div class="fg"><label>Guest Name</label><input class="fi" id="fb_guest" placeholder="Guest name or anonymous"></div><div class="fg"><label>Source</label><select class="fi" id="fb_src"><option>Booking.com</option><option>Expedia</option><option>TripAdvisor</option><option>Google</option><option>Direct / Email</option><option>In-house Form</option></select></div></div>
+  <div class="fg2"><div class="fg"><label>Room Type</label><select class="fi" id="fb_room"><option>Standard Room</option><option>Standard + Balcony</option><option>Junior Suite</option><option>Presidential Suite</option><option>General / Hotel</option></select></div><div class="fg"><label>Stay Date</label><input class="fi" type="date" id="fb_date"></div></div>
+  <div class="fg"><label>Overall Rating</label><div style="display:flex;gap:5px;margin-top:4px;" id="fbStarInput"><span class="star" data-v="1" onclick="setFbStar(1)">★</span><span class="star" data-v="2" onclick="setFbStar(2)">★</span><span class="star" data-v="3" onclick="setFbStar(3)">★</span><span class="star" data-v="4" onclick="setFbStar(4)">★</span><span class="star" data-v="5" onclick="setFbStar(5)">★</span></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:11px;">
+    <div class="fg" style="margin:0"><label>Cleanliness</label><select class="fi" id="fb_clean"><option value="">—</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+    <div class="fg" style="margin:0"><label>Service</label><select class="fi" id="fb_svc"><option value="">—</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+    <div class="fg" style="margin:0"><label>Location / Value</label><select class="fi" id="fb_val"><option value="">—</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+  </div>
+  <div class="fg"><label>Review Text</label><textarea class="fi" id="fb_text" rows="3" placeholder="Paste or type the guest review…"></textarea></div>
+  <div class="fg"><label>Our Reply (optional)</label><textarea class="fi" id="fb_reply" rows="2" placeholder="Hotel response…"></textarea></div>
+</div><div class="mfoot"><button class="btn bo" onclick="closeM('mNewFb')">Cancel</button><button class="btn bg" onclick="saveFb()">Save Feedback</button></div></div></div>
+
+<!-- ══════════════════════════════════════════
+     WEBSITE CONTENT MANAGER PAGES
+══════════════════════════════════════════ -->
+
+<!-- WCM OVERVIEW -->
+<div class="page" id="pg-wcm">
+  <div class="sh"><div><div class="sh-t">Website Content Manager</div><div class="sh-s">Edit every section of halahotelaquapark.com from here — changes reflect live on the website</div></div>
+    <div class="sh-r"><button class="btn btn-out btn-sm" onclick="toast('Opening preview…','info');window.open('hala-bissau-hotel.html','_blank')">Preview Website ↗</button><button class="btn btn-gold btn-sm" onclick="toast('All changes published ✓','ok')">Publish All Changes</button></div>
+  </div>
+  <!-- Status bar -->
+  <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#166534;"><span style="font-size:14px;">●</span><strong>Website Live</strong> — Last published: today at 09:14</div>
+    <div style="font-size:12px;color:var(--mid);">3 sections have unpublished changes</div>
+  </div>
+  <!-- Section cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+    <div class="wcm-card" onclick="nav('rooms-ed',document.getElementById('sbi-rooms-ed'))">
+      <div class="wcm-card-icon">🛏️</div>
+      <div class="wcm-card-title">Rooms &amp; Suites</div>
+      <div class="wcm-card-desc">Edit room names, descriptions, features, prices, and photos</div>
+      <div class="wcm-card-status wcm-s-changed">3 unpublished changes</div>
+    </div>
+    <div class="wcm-card" onclick="nav('dining-ed',document.getElementById('sbi-dining-ed'))">
+      <div class="wcm-card-icon">🍽️</div>
+      <div class="wcm-card-title">Dining &amp; Bars</div>
+      <div class="wcm-card-desc">Update restaurant names, descriptions, hours, and menus</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+    <div class="wcm-card" onclick="nav('events-ed',document.getElementById('sbi-events-ed'))">
+      <div class="wcm-card-icon">🎤</div>
+      <div class="wcm-card-title">Meetings &amp; Events</div>
+      <div class="wcm-card-desc">Edit venue names, capacity, layout options, and pricing</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+    <div class="wcm-card" onclick="nav('offers-ed',document.getElementById('sbi-offers-ed'))">
+      <div class="wcm-card-icon">🏷️</div>
+      <div class="wcm-card-title">Special Offers</div>
+      <div class="wcm-card-desc">Manage promotions, packages, and seasonal rate descriptions</div>
+      <div class="wcm-card-status wcm-s-changed">1 unpublished change</div>
+    </div>
+    <div class="wcm-card" onclick="nav('gallery-ed',document.getElementById('sbi-gallery-ed'))">
+      <div class="wcm-card-icon">🖼️</div>
+      <div class="wcm-card-title">Photo Gallery</div>
+      <div class="wcm-card-desc">Add, remove, and reorder hotel photos across all pages</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+    <div class="wcm-card" onclick="nav('seo-ed',document.getElementById('sbi-seo-ed'))">
+      <div class="wcm-card-icon">🔍</div>
+      <div class="wcm-card-title">SEO &amp; Meta Tags</div>
+      <div class="wcm-card-desc">Page titles, meta descriptions, keywords for Google ranking</div>
+      <div class="wcm-card-status wcm-s-warn">Needs attention</div>
+    </div>
+    <div class="wcm-card" onclick="toast('Contact info editor coming soon','info')">
+      <div class="wcm-card-icon">📍</div>
+      <div class="wcm-card-title">Contact &amp; Location</div>
+      <div class="wcm-card-desc">Phone numbers, email, address, map pin, and opening hours</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+    <div class="wcm-card" onclick="toast('FAQ editor coming soon','info')">
+      <div class="wcm-card-icon">❓</div>
+      <div class="wcm-card-title">FAQ</div>
+      <div class="wcm-card-desc">Add, edit, or reorder frequently asked questions</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+    <div class="wcm-card" onclick="toast('Homepage hero editor coming soon','info')">
+      <div class="wcm-card-icon">🏠</div>
+      <div class="wcm-card-title">Homepage Hero</div>
+      <div class="wcm-card-desc">Main headline, sub-headline, and hero section text</div>
+      <div class="wcm-card-status wcm-s-ok">Up to date</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROOMS EDITOR -->
+<div class="page" id="pg-rooms-ed">
+  <div class="sh">
+    <div><div class="sh-t">Rooms &amp; Suites Editor</div><div class="sh-s">Edit all room types — changes publish to the live website</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="saveRooms()">Save &amp; Publish</button>
+    </div>
+  </div>
+  <div id="roomsEditorList"></div>
+  <button class="btn btn-navy btn-sm" style="margin-top:12px;" onclick="addRoom()">+ Add New Room Type</button>
+</div>
+
+<!-- DINING EDITOR -->
+<div class="page" id="pg-dining-ed">
+  <div class="sh">
+    <div><div class="sh-t">Dining &amp; Bars Editor</div><div class="sh-s">Edit all dining venues — names, descriptions, hours, menu highlights</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="toast('Dining content saved &amp; published ✓','ok')">Save &amp; Publish</button>
+    </div>
+  </div>
+  <div id="diningEditorList"></div>
+</div>
+
+<!-- EVENTS EDITOR -->
+<div class="page" id="pg-events-ed">
+  <div class="sh">
+    <div><div class="sh-t">Meetings &amp; Events Editor</div><div class="sh-s">Edit all event venues and capacities</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="toast('Events content saved &amp; published ✓','ok')">Save &amp; Publish</button>
+    </div>
+  </div>
+  <div id="eventsEditorList"></div>
+</div>
+
+<!-- OFFERS EDITOR -->
+<div class="page" id="pg-offers-ed">
+  <div class="sh">
+    <div><div class="sh-t">Special Offers</div><div class="sh-s">Manage active promotions and seasonal packages</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="toast('Offers saved &amp; published ✓','ok')">Save &amp; Publish</button>
+      <button class="btn btn-navy btn-sm" onclick="addOffer()">+ New Offer</button>
+    </div>
+  </div>
+  <div id="offersEditorList"></div>
+</div>
+
+<!-- GALLERY EDITOR -->
+<div class="page" id="pg-gallery-ed">
+  <div class="sh">
+    <div><div class="sh-t">Photo Gallery</div><div class="sh-s">Manage hotel photos — drag to reorder, click to edit alt text</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="toast('Gallery saved &amp; published ✓','ok')">Save &amp; Publish</button>
+    </div>
+  </div>
+  <!-- Upload zone -->
+  <div id="uploadZone" style="border:2px dashed var(--brd);padding:28px;text-align:center;margin-bottom:20px;cursor:pointer;background:var(--sf);transition:all .2s;"
+    ondragover="event.preventDefault();this.style.borderColor='var(--gold)'"
+    ondragleave="this.style.borderColor='var(--brd)'"
+    ondrop="handleGalleryDrop(event)"
+    onclick="document.getElementById('galleryFileIn').click()">
+    <div style="font-size:28px;margin-bottom:10px;">📸</div>
+    <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px;">Drop photos here or click to upload</div>
+    <div style="font-size:11.5px;color:var(--mid);">JPG, PNG, WebP — max 5 MB each</div>
+    <input type="file" id="galleryFileIn" accept="image/*" multiple style="display:none" onchange="galleryFileChosen(this)">
+  </div>
+  <div id="galleryGrid"></div>
+</div>
+
+<!-- SEO EDITOR -->
+<div class="page" id="pg-seo-ed">
+  <div class="sh">
+    <div><div class="sh-t">SEO &amp; Meta Tags</div><div class="sh-s">Control how Hala Bissau appears on Google and social media</div></div>
+    <div class="sh-r">
+      <button class="btn btn-out btn-sm" onclick="nav('wcm',document.getElementById('sbi-wcm'))">← Back</button>
+      <button class="btn btn-gold btn-sm" onclick="saveSEO()">Save &amp; Publish</button>
+    </div>
+  </div>
+  <div id="seoEditorBody"></div>
+</div>
+
+<div id="toastC"></div>
+<script>
+'use strict';
+/* ── NAV ── */
+const PN={dash:'Dashboard',res:'Reservations',inv:'Room Inventory',bcal:'Booking Calendar',rcal:'Rate Calendar',rplans:'Rate Plans',guests:'Guests & CRM',ops:'Operations',pool:'Pool Tickets',rpts:'Reports & Analytics',fb:'Guest Feedback',wcm:'Website Content Manager','rooms-ed':'Rooms & Suites Editor','dining-ed':'Dining & Bars Editor','events-ed':'Meetings & Events Editor','offers-ed':'Special Offers Editor','gallery-ed':'Photo Gallery Editor','seo-ed':'SEO & Meta Tags'};
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
+  document.querySelectorAll('.sbi').forEach(s=>s.classList.remove('on'));
+  if(el)el.classList.add('on');
+  const t=document.getElementById('tbTitle');if(t)t.textContent=PN[id]||id;
+  document.getElementById('content').scrollTop=0;
+}
+function toggleSB(){document.getElementById('sb').classList.toggle('col');}
+function doLogout(){location.reload();}
+/* ── CLOCK ── */
+function tick(){
+  const n=new Date(),el=document.getElementById('tbDate');
+  if(el)el.textContent=n.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' · '+n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const dd=document.getElementById('dashDate');
+  if(dd)dd.textContent=n.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+tick();setInterval(tick,30000);
+/* ── MODALS ── */
+function openM(id){const m=document.getElementById(id);if(m)m.classList.add('open');}
+function closeM(id){const m=document.getElementById(id);if(m)m.classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('mov'))e.target.classList.remove('open');});
+/* ── TOAST ── */
+function toast(msg,type='info'){
+  const c=document.getElementById('toastC');if(!c)return;
+  const clr={success:'#10b981',ok:'#f8bc1a',info:'#3b82f6',warn:'#f59e0b',error:'#ef4444'};
+  const t=document.createElement('div');t.className='toast';t.style.borderLeftColor=clr[type]||clr.info;t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),350);},3000);
+}
+/* ── BADGE HELPERS ── */
+function sBdg(s){const m={confirmed:'dg Confirmed',checkin:'dy Checking In',checkout:'do Checking Out',pending:'dp Pending',cancelled:'dr Cancelled'};const[c,l]=(m[s]||'dgr '+s).split(' ',2);return`<span class="bdg ${c}">${l||s}</span>`;}
+function segBdg(s){const m={'Government':'dn3','NGO / Embassy':'dg','Corporate':'db','Business':'do','Leisure':'dp','VIP':'dy'};return`<span class="bdg ${m[s]||'dgr'}">${s}</span>`;}
+/* ── RESERVATIONS ── */
+const RES=[
+  {ref:'HB-2026-1042',guest:'Jean Dubois',room:'Junior Suite 301',ci:'23 Jun 2026',co:'26 Jun 2026',nights:3,rate:'Flexible',total:840000,st:'checkin'},
+  {ref:'HB-2026-1041',guest:'Maria Santos',room:'Standard 204',ci:'23 Jun 2026',co:'25 Jun 2026',nights:2,rate:'Govt & Military',total:296000,st:'checkin'},
+  {ref:'HB-2026-1040',guest:'Ahmed Al-Rashid',room:'Pres. Suite 401',ci:'20 Jun 2026',co:'24 Jun 2026',nights:4,rate:'Corporate',total:2200000,st:'confirmed'},
+  {ref:'HB-2026-1039',guest:'Emily Johnson',room:'Std+Balcony 115',ci:'18 Jun 2026',co:'23 Jun 2026',nights:5,rate:'B&B',total:1010000,st:'checkout'},
+  {ref:'HB-2026-1038',guest:'Carlos Ferreira',room:'Junior Suite 305',ci:'21 Jun 2026',co:'26 Jun 2026',nights:5,rate:'Long Stay MMP',total:990000,st:'confirmed'},
+  {ref:'HB-2026-1037',guest:'Aminata Diallo',room:'Standard 108',ci:'24 Jun 2026',co:'29 Jun 2026',nights:5,rate:'Long Stay',total:690000,st:'pending'},
+  {ref:'HB-2026-1036',guest:'Hans Mueller',room:'Std+Balcony 212',ci:'22 Jun 2026',co:'24 Jun 2026',nights:2,rate:'Flexible',total:360000,st:'confirmed'},
+  {ref:'HB-2026-1035',guest:'Fatima Camará',room:'Standard 106',ci:'19 Jun 2026',co:'23 Jun 2026',nights:4,rate:'Flexible',total:600000,st:'checkout'},
+  {ref:'HB-2026-1034',guest:'Liu Wei',room:'Junior Suite 312',ci:'25 Jun 2026',co:'28 Jun 2026',nights:3,rate:'Advance Purchase',total:741000,st:'pending'},
+  {ref:'HB-2026-1033',guest:'Oumar Baldé',room:'Standard 201',ci:'16 Jun 2026',co:'19 Jun 2026',nights:3,rate:'Govt & Military',total:369000,st:'confirmed'},
+  {ref:'HB-2026-1032',guest:'Dr. Ana Mendes',room:'Pres. Suite 402',ci:'22 Jun 2026',co:'25 Jun 2026',nights:3,rate:'Corporate',total:1650000,st:'confirmed'},
+  {ref:'HB-2026-1031',guest:'Ibrahim Ba',room:'Standard 103',ci:'23 Jun 2026',co:'24 Jun 2026',nights:1,rate:'Flexible',total:150000,st:'checkin'},
+];
+let _resD=[...RES];
+function buildDash(){
+  const t=document.getElementById('dashTbl');if(t)t.innerHTML=RES.slice(0,6).map(r=>`<tr><td><code style="font-size:10px;color:var(--navy);background:rgba(38,34,98,.08);padding:2px 5px;">${r.ref}</code></td><td><strong>${r.guest}</strong></td><td style="color:var(--mid);font-size:12px;">${r.room}</td><td style="font-size:12px;">${r.ci}</td><td style="font-size:12px;">${r.co}</td><td style="font-size:12px;color:var(--mid);">${r.rate}</td><td><strong>XOF ${r.total.toLocaleString()}</strong></td><td>${sBdg(r.st)}</td></tr>`).join('');
+  const ci=document.getElementById('dashCI');if(ci)ci.innerHTML=RES.filter(r=>r.st==='checkin').map(r=>`<tr><td><strong>${r.guest}</strong></td><td style="font-size:12px;">${r.room}</td><td style="text-align:center;">${r.nights}</td><td>${sBdg(r.st)}</td></tr>`).join('');
+  buildDashFb();
+}
+function buildResTable(data){
+  _resD=data||[...RES];
+  const t=document.getElementById('resTbl');if(!t)return;
+  t.innerHTML=_resD.map(r=>`<tr><td><input type="checkbox" style="accent-color:var(--navy)"></td><td><code style="font-size:10px;color:var(--navy);background:rgba(38,34,98,.08);padding:2px 5px;">${r.ref}</code></td><td><strong>${r.guest}</strong></td><td style="font-size:12px;">${r.room}</td><td style="font-size:12px;">${r.ci}</td><td style="font-size:12px;">${r.co}</td><td style="text-align:center;">${r.nights}</td><td style="font-size:12px;color:var(--mid);">${r.rate}</td><td><strong>XOF ${r.total.toLocaleString()}</strong></td><td>${sBdg(r.st)}</td><td><div style="display:flex;gap:3px;"><button class="btn bo bsm" onclick="toast('Viewing reservation','info')">View</button><button class="btn br bsm" onclick="toast('Cancelled','warn')">Cancel</button></div></td></tr>`).join('');
+  const i=document.getElementById('resInfo');if(i)i.textContent='Showing '+_resD.length+' of '+RES.length;
+}
+function srchRes(q){buildResTable(q?RES.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase())):null);}
+function resTab(btn,t){document.querySelectorAll('#resTabs .tab').forEach(x=>x.classList.remove('on'));btn.classList.add('on');buildResTable(t==='all'?null:RES.filter(r=>r.st===t));}
+function filterRes(k,v){buildResTable(v?RES.filter(r=>r[k==='room'?'room':'rate'].toLowerCase().includes(v.toLowerCase())):null);}
+function saveRes(){const fn=document.getElementById('rb_fn')?.value.trim(),ln=document.getElementById('rb_ln')?.value.trim();if(!fn||!ln){toast('Guest name required','warn');return;}toast('Reservation confirmed for '+fn+' '+ln,'success');closeM('mRes');}
+/* ── INVENTORY ── */
+const INV={std:{name:'Standard Room',alloc:80,booked:62,maint:3,c:'#3b82f6'},balc:{name:'Std + Balcony',alloc:50,booked:40,maint:2,c:'#10b981'},jr:{name:'Junior Suite',alloc:24,booked:16,maint:1,c:'#f59e0b'},pres:{name:'Presidential Suite',alloc:10,booked:4,maint:0,c:'#8b5cf6'}};
+const INVLOG=[{dt:'23 Jun 2026 09:14',type:'Standard + Balcony',action:'Booking confirmed (HB-2026-1042)',delta:'-1',av:8,by:'Reception'},{dt:'22 Jun 2026 16:22',type:'Standard Room',action:'Allocation increased',delta:'+5',av:18,by:'Manager'},{dt:'22 Jun 2026 14:05',type:'Presidential Suite',action:'Maintenance completed',delta:'+1',av:6,by:'Manager'}];
+function getAv(k){return Math.max(0,INV[k].alloc-INV[k].booked-INV[k].maint);}
+function buildInv(){
+  const av=Object.keys(INV).reduce((s,k)=>s+getAv(k),0);
+  const tk=document.getElementById('tkAv');if(tk)tk.textContent=av;
+  const g=document.getElementById('invGrid');if(!g)return;
+  g.innerHTML=Object.entries(INV).map(([k,r])=>{const a=getAv(k),pct=Math.min(100,Math.round(r.booked/r.alloc*100));return`<div class="icard" style="--ic:${r.c}"><div class="ict">${r.name}</div><div class="icv">${a}</div><div class="icof">of ${r.alloc} rooms available</div><div class="icbar"><div class="icbar-f" style="width:${pct}%;background:${r.c};"></div></div><div class="icd"><span>${r.booked} booked</span><span>${r.maint} maint.</span><span>${a} free</span></div><button onclick="openInvEdit()" style="margin-top:9px;width:100%;padding:5px;background:none;border:1px solid var(--brd);font-family:inherit;font-size:11px;cursor:pointer;color:var(--navy);">Edit Allocation</button></div>`;}).join('');
+  const l=document.getElementById('invLog');if(l)l.innerHTML=INVLOG.map(x=>`<tr><td style="font-size:11.5px;color:var(--mid);">${x.dt}</td><td>${x.type}</td><td style="font-size:12px;">${x.action}</td><td style="text-align:center;font-weight:700;color:${x.delta.startsWith('-')?'var(--r)':'var(--g)'};">${x.delta}</td><td style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--navy);">${x.av}</td><td style="font-size:12px;color:var(--mid);">${x.by}</td></tr>`).join('');
+}
+function openInvEdit(){const el=document.getElementById('invEditBody');if(el)el.innerHTML=Object.entries(INV).map(([k,r])=>`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;align-items:end;padding-bottom:10px;border-bottom:1px solid var(--brd);"><div style="font-size:13px;font-weight:600;color:var(--navy);align-self:center;">${r.name}</div><div class="fg" style="margin:0;"><label>Total Allocated</label><input class="fi" type="number" id="ie_${k}_a" value="${r.alloc}" min="0"></div><div class="fg" style="margin:0;"><label>In Maintenance</label><input class="fi" type="number" id="ie_${k}_m" value="${r.maint}" min="0"></div></div>`).join('');openM('mEditInv');}
+function saveInvEdit(){Object.keys(INV).forEach(k=>{INV[k].alloc=parseInt(document.getElementById('ie_'+k+'_a')?.value)||0;INV[k].maint=parseInt(document.getElementById('ie_'+k+'_m')?.value)||0;});buildInv();closeM('mEditInv');toast('Allocation updated','success');}
+/* ── BOOKING CALENDAR ── */
+let CY=2026,CM=5;
+const MONS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CALEVS={
+  23:[{g:'Jean Dubois',r:'Ste 301',st:'checkin'},{g:'Maria Santos',r:'Std 204',st:'checkin'},{g:'Ibrahim Ba',r:'Std 103',st:'checkin'}],
+  24:[{g:'Ahmed Al-Rashid',r:'Pres 401',st:'confirmed'},{g:'Emily Johnson',r:'Bal 115',st:'checkout'},{g:'Fatima Camará',r:'Std 106',st:'checkout'}],
+  25:[{g:'Aminata Diallo',r:'Std 108',st:'pending'},{g:'Liu Wei',r:'Ste 312',st:'pending'}],
+  26:[{g:'Jean Dubois',r:'Ste 301',st:'checkout'},{g:'Carlos Ferreira',r:'Ste 305',st:'checkout'}],
+  20:[{g:'Ahmed Al-Rashid',r:'Pres 401',st:'confirmed'}],
+  21:[{g:'Carlos Ferreira',r:'Ste 305',st:'checkin'},{g:'Hans Mueller',r:'Bal 212',st:'confirmed'}],
+  22:[{g:'Dr. Ana Mendes',r:'Pres 402',st:'confirmed'},{g:'Hans Mueller',r:'Bal 212',st:'confirmed'}],
+  15:[{g:'Group Block',r:'8 rooms',st:'confirmed'}],
+};
+const EV_COLORS={checkin:'#f59e0b',checkout:'#ef4444',confirmed:'#10b981',pending:'#8b5cf6',cancelled:'#94a3b8'};
+function buildCal(){
+  const lbl=document.getElementById('calLbl');if(lbl)lbl.textContent=MONS[CM]+' '+CY;
+  const first=new Date(CY,CM,1).getDay(),days=new Date(CY,CM+1,0).getDate(),today=new Date();
+  let h='';
+  for(let i=0;i<first;i++)h+='<div class="cd-e"></div>';
+  for(let d=1;d<=days;d++){
+    const isT=today.getDate()===d&&today.getMonth()===CM&&today.getFullYear()===CY;
+    const we=new Date(CY,CM,d).getDay()===0||new Date(CY,CM,d).getDay()===6;
+    const evs=(CALEVS[d]||[]).map(e=>{
+      const c=EV_COLORS[e.st]||'#94a3b8';
+      return`<div class="cev" style="background:${c}18;color:${c};border-left:2px solid ${c};" onclick="toast('${e.g} · ${e.r}','info')">${e.g}</div>`;
+    }).join('');
+    h+=`<div class="cd${isT?' tod':''}${we?' wknd':''}"><div class="cd-n">${d}</div>${evs}</div>`;
+  }
+  const g=document.getElementById('calGrid');if(g)g.innerHTML=h;
+}
+function calNav(d){CM+=d;if(CM>11){CM=0;CY++;}if(CM<0){CM=11;CY--;}buildCal();}
+/* ── RATE CALENDAR ── */
+const PNAMES={FLEX:'Flexible Rate',BB:'Bed & Breakfast',ADV7:'Advance Purchase',MMP:'Long Stay MMP',LONG5:'Long Stay Special',GOVT:'Government & Military',CORP:'Corporate Rate',GRP:'Group Rate'};
+const RNAMES={std:'Standard Room',balc:'Std + Balcony',jr:'Junior Suite',pres:'Presidential Suite'};
+const RBASE={std:{FLEX:150000,BB:168000,ADV7:132000,MMP:135000,LONG5:123000,GOVT:123000,CORP:120000,GRP:128000},balc:{FLEX:180000,BB:202000,ADV7:158000,MMP:162000,LONG5:148000,GOVT:148000,CORP:144000,GRP:153000},jr:{FLEX:280000,BB:314000,ADV7:246000,MMP:252000,LONG5:230000,GOVT:230000,CORP:224000,GRP:238000},pres:{FLEX:550000,BB:616000,ADV7:484000,MMP:495000,LONG5:453000,GOVT:453000,CORP:440000,GRP:468000}};
+const RCS={};
+let RCY=2026,RCM=5,rcPlan='FLEX',rcRoom='std',rcSel=null;
+(function(){const t=new Date();for(let d=0;d<90;d++){const dt=new Date(t);dt.setDate(t.getDate()+d);const ds=dt.toISOString().split('T')[0],we=dt.getDay()===5||dt.getDay()===6;Object.keys(PNAMES).forEach(pl=>Object.keys(RNAMES).forEach(rm=>{const b=RBASE[rm][pl]||150000;RCS[ds+':'+pl+':'+rm]={price:Math.round(b*(we?1.15:1)),minStay:pl==='MMP'?3:pl==='LONG5'?5:1,avail:'open'};}));}})();
+function rcGet(ds){return RCS[ds+':'+rcPlan+':'+rcRoom]||{price:RBASE[rcRoom]?.[rcPlan]||180000,minStay:1,avail:'open'};}
+function buildRcGrid(){
+  const ml=document.getElementById('rcMonthLbl');
+  const lb=document.getElementById('rcLabel');if(lb)lb.textContent='Viewing: '+PNAMES[rcPlan]+' · '+RNAMES[rcRoom];
+  const first=new Date(RCY,RCM,1).getDay(),days=new Date(RCY,RCM+1,0).getDate(),tdStr=new Date().toISOString().split('T')[0];
+  // Update selectors label
+  const rcs=document.getElementById('rcPlanSel');if(rcs)for(let o of rcs.options)if(o.value===rcPlan)o.selected=true;
+  const rrs=document.getElementById('rcRoomSel');if(rrs)for(let o of rrs.options)if(o.value===rcRoom)o.selected=true;
+  let h='';
+  for(let i=0;i<first;i++)h+='<div class="rc-e"></div>';
+  for(let d=1;d<=days;d++){
+    const ds=RCY+'-'+String(RCM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const past=ds<tdStr,we=new Date(RCY,RCM,d).getDay()===5||new Date(RCY,RCM,d).getDay()===6,sel=rcSel===ds,r=rcGet(ds);
+    const closed=r.avail==='closed';
+    const pc=closed?'p-cl':r.price<160000?'p-lo':r.price>300000?'p-hi':'p-mi';
+    const prHtml=closed?'<div class="rcpr p-cl">Closed</div>':'<div class="rcpr '+pc+'">'+(r.price?(r.price/1000).toFixed(0)+'k':'—')+'</div>';
+    const avTxt=r.avail==='limited'?'Last rooms':closed?'Closed':'Open';
+    const cls='rcc'+(past?' past':'')+(we?' wknd':'')+(sel?' sel':'')+(closed?' cls':'');
+    const oc=past?'':'rcClick(\''+ds+'\')';
+    h+='<div class="'+cls+'" onclick="'+oc+'"><div class="rcdn">'+d+'</div>'+prHtml+'<div class="rcav">'+avTxt+'</div></div>';
+  }
+  const g=document.getElementById('rcGrid');if(g)g.innerHTML=h;
+}
+function rcClick(ds){
+  rcSel=ds;buildRcGrid();
+  const r=rcGet(ds),d=new Date(ds+'T12:00:00'),lbl=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const sub=document.getElementById('rcEpSub');if(sub)sub.textContent=lbl;
+  const body=document.getElementById('rcEpBody');
+  if(body)body.innerHTML='<div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px;">'+lbl+'</div>'
+    +'<div class="fg" style="margin-bottom:9px;"><label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:4px;">Rate (XOF)</label><div class="pricebox"><span class="pricebox-c">XOF</span><input type="number" id="epPrice" value="'+(r.price||'')+'" placeholder="Enter rate" min="0" step="1000"></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;"><div class="fg" style="margin:0;"><label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:3px;">Min Stay</label><select id="epMin" class="fi">'
+    +[1,2,3,5,7].map(n=>'<option value="'+n+'"'+(r.minStay===n?' selected':'')+'>'+n+' night'+(n>1?'s':'')+'</option>').join('')
+    +'</select></div><div class="fg" style="margin:0;"><label style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:3px;">Availability</label><select id="epAvail" class="fi"><option value="open"'+(r.avail==='open'?' selected':'')+'>Open</option><option value="limited"'+(r.avail==='limited'?' selected':'')+'>Limited</option><option value="closed"'+(r.avail==='closed'?' selected':'')+'>Stop Sell</option></select></div></div>'
+    +'<button class="ep-save" onclick="rcSaveOne()">Save This Date</button>'
+    +'<button class="ep-range" onclick="openRcRange()">Apply to Date Range…</button>';
+}
+function rcSaveOne(){if(!rcSel)return;const price=parseFloat(document.getElementById('epPrice')?.value),avail=document.getElementById('epAvail')?.value||'open';if(!price&&avail!=='closed'){toast('Enter a price','warn');return;}RCS[rcSel+':'+rcPlan+':'+rcRoom]={price,minStay:parseInt(document.getElementById('epMin')?.value)||1,avail};buildRcGrid();toast('Rate saved','success');}
+function openRcRange(){if(!rcSel)return;const price=parseFloat(document.getElementById('epPrice')?.value)||0;document.getElementById('rrPlan').textContent=PNAMES[rcPlan];document.getElementById('rrRoom').textContent=RNAMES[rcRoom];document.getElementById('rrPr').textContent='XOF '+(price/1000).toFixed(0)+'k';document.getElementById('rr_from').value=rcSel;openM('mRcRange');}
+function applyRcRange(){const from=document.getElementById('rr_from')?.value,to=document.getElementById('rr_to')?.value,avail=document.getElementById('rr_av')?.value||'open',df=document.getElementById('rr_days')?.value||'all';if(!from||!to||from>to){toast('Invalid date range','warn');return;}const price=parseFloat(document.getElementById('epPrice')?.value)||0;let c=0,cur=new Date(from+'T12:00:00'),end=new Date(to+'T12:00:00');while(cur<=end){const dow=cur.getDay(),skip=(df==='wd'&&(dow===0||dow===5||dow===6))||(df==='we'&&dow>=1&&dow<=4);if(!skip){RCS[cur.toISOString().split('T')[0]+':'+rcPlan+':'+rcRoom]={price,minStay:1,avail};c++;}cur.setDate(cur.getDate()+1);}closeM('mRcRange');buildRcGrid();toast('Applied to '+c+' dates','success');}
+function rcNav(d){RCM+=d;if(RCM>11){RCM=0;RCY++;}if(RCM<0){RCM=11;RCY--;}rcSel=null;buildRcGrid();}
+function rcPlanChange(v){rcPlan=v;buildRcGrid();}
+function rcRoomChange(v){rcRoom=v;buildRcGrid();}
+/* ── RATE PLANS ── */
+let RPS=[
+  {id:'FLEX',name:'Flexible Rate',code:'HB-FLEX',type:'Lowest Regular',comm:true,min:1,cdays:2,cnote:'Free cancellation up to 48 hours before arrival.',cond:'Room only. Max 4 guests.',elig:'Open to all.',active:true},
+  {id:'BB',name:'Bed & Breakfast',code:'HB-BB',type:'Lowest Regular',comm:true,min:1,cdays:2,cnote:'Free cancellation up to 48 hours before arrival.',cond:'Includes daily breakfast for 2 guests at Shahrazad Restaurant.',elig:'Open to all.',active:true},
+  {id:'ADV7',name:'Advance Purchase (7d)',code:'HB-ADV7',type:'Lowest Regular',comm:false,min:1,cdays:'non',cnote:'Non-refundable — no cancellations permitted.',cond:'Must be booked at least 7 days before arrival.',elig:'Open to all.',active:true},
+  {id:'MMP',name:'Long Stay MMP (3N+)',code:'HB-MMP',type:'Lowest Regular',comm:true,min:3,cdays:3,cnote:'Free cancellation up to 72 hours before arrival.',cond:'Minimum 3 consecutive nights.',elig:'3+ night bookings.',active:true},
+  {id:'LONG5',name:'Long Stay Special (5N+)',code:'HB-LONG5',type:'Lowest Regular',comm:true,min:5,cdays:3,cnote:'Free cancellation up to 72 hours before arrival.',cond:'Min 5 nights. Breakfast included.',elig:'5+ night bookings.',active:true},
+  {id:'GOVT',name:'Government & Military',code:'HB-GOVT',type:'Government',comm:false,min:1,cdays:2,cnote:'Free cancellation up to 48 hours before arrival.',cond:'Valid government or military ID required at check-in.',elig:'Valid government ID required.',active:true},
+  {id:'CORP',name:'Corporate Rate',code:'HB-CORP',type:'Corporate',comm:true,min:1,cdays:2,cnote:'Free cancellation up to 48 hours before arrival.',cond:'Valid corporate ID required. Breakfast included.',elig:'Valid corporate ID required.',active:true},
+  {id:'GRP',name:'Group Rate',code:'HB-GRP',type:'Group Code',comm:true,min:3,cdays:7,cnote:'Free cancellation up to 7 days before arrival.',cond:'Minimum 10 rooms. Breakfast included.',elig:'Minimum 10 rooms.',active:true},
+];
+function buildRpTable(){
+  const el=document.getElementById('rpTbl');if(!el)return;
+  el.innerHTML=RPS.map((r,i)=>`<tr><td><strong style="cursor:pointer;color:var(--navy);" onclick="viewRpD(${i})">${r.name}</strong></td><td><code style="font-size:10px;color:var(--navy);background:rgba(38,34,98,.08);padding:2px 5px;">${r.code}</code></td><td><span class="bdg db">${r.type}</span></td><td style="font-size:12px;color:var(--mid);">${r.cdays==='non'?'Non-refundable':r.cdays+'d before'}</td><td style="text-align:center;">${r.min}+</td><td style="text-align:center;"><span class="bdg ${r.comm?'dg':'dgr'}">${r.comm?'Yes':'No'}</span></td><td style="text-align:center;"><button style="position:relative;width:34px;height:18px;background:${r.active?'var(--navy)':'var(--brd)'};border-radius:9px;border:none;cursor:pointer;" onclick="toggleRp(${i})"><span style="position:absolute;top:2px;left:${r.active?'15px':'2px'};width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;"></span></button></td><td><div style="display:flex;gap:3px;"><button class="btn bn bsm" onclick="viewRpD(${i})">Details</button><button class="btn bo bsm" onclick="editRp(${i})">Edit</button></div></td></tr>`).join('');
+}
+function toggleRp(i){RPS[i].active=!RPS[i].active;buildRpTable();toast(RPS[i].name+' '+(RPS[i].active?'activated':'deactivated'),'ok');}
+function viewRpD(i){const r=RPS[i];document.getElementById('rpListWrap').style.display='none';const v=document.getElementById('rpdView');v.style.display='block';v.innerHTML='<button class="btn bo bsm" style="margin-bottom:12px;" onclick="document.getElementById(\'rpListWrap\').style.display=\'\';document.getElementById(\'rpdView\').style.display=\'none\';">← Back</button><div style="background:var(--sf);border:1px solid var(--brd);"><div style="padding:14px 18px;border-bottom:2px solid var(--brd);background:var(--cream);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><div style="font-family:\'Cormorant Garamond\',serif;font-size:21px;color:var(--navy);">'+r.name+'</div><div style="font-size:11px;color:var(--mid);margin-top:2px;">'+r.code+'</div></div><div style="display:flex;gap:5px;"><span class="bdg db">'+r.type+'</span><span class="bdg '+(r.comm?'dg':'dgr')+'">'+(r.comm?'Commissionable':'Non-commissionable')+'</span><span class="bdg '+(r.active?'dg':'dr')+'">'+(r.active?'Active':'Inactive')+'</span></div></div><div style="padding:18px;"><div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--brd);"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Conditions</div><div style="font-size:12.5px;line-height:1.75;">'+r.cond+'</div></div><div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--brd);"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Cancellation Policy</div><div style="background:#fef2f2;border:1px solid #fecaca;padding:10px 12px;font-size:12px;color:#7f1d1d;line-height:1.7;">'+r.cnote+'</div></div><div><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Eligibility</div><div style="font-size:12.5px;line-height:1.75;">'+r.elig+'</div></div></div></div>';}
+function editRp(i){const r=RPS[i];document.getElementById('mNewRpT').textContent='Edit: '+r.name;document.getElementById('rp_nm').value=r.name;document.getElementById('rp_cd').value=r.code;document.getElementById('rp_cond').value=r.cond;document.getElementById('rp_cnote').value=r.cnote;document.getElementById('rp_cdays').value=String(r.cdays);openM('mNewRp');}
+function openNewRpM(){document.getElementById('mNewRpT').textContent='Add Rate Plan';['rp_nm','rp_cd','rp_cond','rp_cnote','rp_cdays'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});openM('mNewRp');}
+function saveRp(){const nm=document.getElementById('rp_nm')?.value.trim();if(!nm){toast('Plan name required','warn');return;}toast('Rate plan saved','success');closeM('mNewRp');}
+/* ── GUESTS ── */
+const GUESTS=[
+  {id:1,fn:'Maria',ln:'Santos',email:'m.santos@gov.gw',nat:'Guinea-Bissauan',seg:'Government',visits:8,last:'15 May 2026',spent:4320000,prefs:['High floor','King bed'],diet:'No restrictions',notes:'Long-term government guest. Always requests Room 204.'},
+  {id:2,fn:'Jean',ln:'Dubois',email:'j.dubois@un.org',nat:'French',seg:'NGO / Embassy',visits:12,last:'23 Jun 2026',spent:8640000,prefs:['Pool view','Twin beds','Late check-out'],diet:'Vegetarian',notes:'UN mission staff. Books monthly stays.'},
+  {id:3,fn:'Ahmed',ln:'Al-Rashid',email:'ahmed.r@corp.ae',nat:'Emirati',seg:'Corporate',visits:3,last:'20 Jun 2026',spent:3200000,prefs:['Presidential Suite only','Halal meals','Prayer mat'],diet:'Halal only',notes:'Senior executive. Presidential Suite only.'},
+  {id:4,fn:'Emily',ln:'Johnson',email:'emily.j@usaid.gov',nat:'American',seg:'NGO / Embassy',visits:2,last:'18 Jun 2026',spent:1840000,prefs:['Non-smoking','Ground floor'],diet:'Gluten-free preferred',notes:'USAID staff.'},
+  {id:5,fn:'Carlos',ln:'Ferreira',email:'c.ferreira@ptgov.pt',nat:'Portuguese',seg:'Government',visits:6,last:'1 Jun 2026',spent:5120000,prefs:['Garden view','King bed'],diet:'No restrictions',notes:'Portuguese embassy. Regular guest.'},
+];
+let allG=[...GUESTS];
+function buildGuestTbl(data){
+  data=data||allG;
+  const info=document.getElementById('guestInfo');if(info)info.textContent=data.length+' guest'+(data.length!==1?'s':'');
+  const el=document.getElementById('guestTbl');if(!el)return;
+  el.innerHTML=data.map(g=>`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:30px;height:30px;border-radius:50%;background:rgba(38,34,98,.1);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--navy);flex-shrink:0;">${g.fn[0]}${g.ln[0]}</div><div><div style="font-weight:600;">${g.fn} ${g.ln}</div><div style="font-size:11px;color:var(--mid);">${g.email}</div></div></div></td><td style="font-size:12px;">${g.nat}</td><td>${segBdg(g.seg)}</td><td style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--navy);">${g.visits}</td><td style="font-size:12px;">${g.last}</td><td><strong>XOF ${g.spent.toLocaleString()}</strong></td><td><button class="btn bn bsm" onclick="viewGuest(${g.id})">View Profile</button></td></tr>`).join('');
+}
+function srchGuest(q){buildGuestTbl(q?allG.filter(g=>JSON.stringify(g).toLowerCase().includes(q.toLowerCase())):null);}
+function filterGuestSeg(s){buildGuestTbl(s?allG.filter(g=>g.seg===s):null);}
+function viewGuest(id){const g=allG.find(x=>x.id===id);if(!g)return;const d=document.getElementById('guestDetail');if(!d)return;d.style.display='block';d.innerHTML='<div style="background:var(--sf);border:1px solid var(--brd);"><div style="padding:14px 17px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px;flex-wrap:wrap;"><div style="width:42px;height:42px;border-radius:50%;background:rgba(38,34,98,.1);display:flex;align-items:center;justify-content:center;font-family:\'Cormorant Garamond\',serif;font-size:17px;color:var(--navy);">'+g.fn[0]+g.ln[0]+'</div><div><div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:var(--navy);">'+g.fn+' '+g.ln+'</div><div style="font-size:11.5px;color:var(--mid);margin-top:2px;">'+g.email+'</div></div><div style="margin-left:auto;">'+segBdg(g.seg)+'</div></div><div style="padding:16px 17px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;"><div style="background:var(--cream);border:1px solid var(--brd);padding:10px;"><div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:3px;">Visits</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:var(--navy);">'+g.visits+'</div></div><div style="background:var(--cream);border:1px solid var(--brd);padding:10px;"><div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:3px;">Total Spent</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--navy);">XOF '+(g.spent/1e6).toFixed(1)+'M</div></div><div style="background:var(--cream);border:1px solid var(--brd);padding:10px;"><div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:3px;">Last Stay</div><div style="font-size:13px;color:var(--navy);">'+g.last+'</div></div></div><div style="padding:0 17px 16px;"><div style="background:rgba(248,188,26,.07);border-left:3px solid var(--gold);padding:10px 12px;margin-bottom:12px;"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Notes</div><div style="font-size:12.5px;line-height:1.7;">'+g.notes+'</div></div><div style="margin-bottom:8px;"><div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mid);margin-bottom:5px;">Preferences</div><div style="display:flex;flex-wrap:wrap;gap:3px;">'+g.prefs.map(p=>'<span style="display:inline-flex;padding:2px 8px;background:rgba(38,34,98,.06);color:var(--navy);font-size:11px;border-radius:2px;">'+p+'</span>').join('')+'</div></div><div style="font-size:12.5px;color:var(--mid);">Dietary: <span style="color:var(--ch);">'+g.diet+'</span></div><button class="btn bo bsm" style="margin-top:12px;" onclick="document.getElementById(\'guestDetail\').style.display=\'none\';">← Back to Guests</button></div></div>';d.scrollIntoView({behavior:'smooth',block:'start'});}
+function saveNewGuest(){const fn=document.getElementById('ng_fn')?.value.trim(),ln=document.getElementById('ng_ln')?.value.trim();if(!fn||!ln){toast('Name required','warn');return;}allG.unshift({id:allG.length+1,fn,ln,email:document.getElementById('ng_em')?.value||'',nat:document.getElementById('ng_nat')?.value||'—',seg:document.getElementById('ng_seg')?.value||'Leisure',visits:0,last:'—',spent:0,prefs:document.getElementById('ng_pref')?.value?document.getElementById('ng_pref').value.split(',').map(x=>x.trim()):[],diet:document.getElementById('ng_diet')?.value||'',notes:document.getElementById('ng_notes')?.value||''});buildGuestTbl();toast('Guest added','success');closeM('mNewGuest');}
+/* ── OPERATIONS ── */
+const OPS=[
+  {id:'HB-OPS-001',guest:'Carlos Silva',room:'201',dept:'Housekeeping',type:'Service Request / Towels',desc:'2 bath + 2 hand towels needed',priority:'Normal',assigned:'Fatima B.',reported:'23 Jun 08:30',status:'In Progress'},
+  {id:'HB-OPS-002',guest:'Maria Santos',room:'204',dept:'Housekeeping',type:'Room Clean',desc:'Late checkout — clean by 3pm',priority:'High',assigned:'Maria S.',reported:'23 Jun 09:15',status:'Open'},
+  {id:'HB-OPS-003',guest:'Jean Dubois',room:'301',dept:'Housekeeping',type:'Extra Pillows',desc:'3 extra pillows requested',priority:'Normal',assigned:'Amina C.',reported:'23 Jun 10:00',status:'Completed'},
+  {id:'HB-OPS-004',guest:'Ahmed Al-Rashid',room:'401',dept:'Housekeeping',type:'Prayer Mat',desc:'Prayer mat and compass required',priority:'High',assigned:'Rosa D.',reported:'23 Jun 07:00',status:'Completed'},
+  {id:'HB-OPS-005',guest:'Room 304',room:'304',dept:'Maintenance',type:'HVAC / AC',desc:'AC not cooling — compressor issue',priority:'Urgent',assigned:'João Engineer',reported:'23 Jun 06:30',status:'In Progress'},
+  {id:'HB-OPS-006',guest:'Pool Area',room:'—',dept:'Maintenance',type:'Pool Equipment',desc:'Pool pump making unusual noise',priority:'High',assigned:'Alfa Tech',reported:'22 Jun 14:00',status:'Open'},
+  {id:'HB-OPS-007',guest:'Room 512',room:'512',dept:'Maintenance',type:'TV / AV',desc:'TV remote not working',priority:'Low',assigned:'Front Office',reported:'23 Jun 11:00',status:'Open'},
+  {id:'HB-OPS-008',guest:'Fatima Camará',room:'106',dept:'Food & Beverage',type:'Room Service',desc:'Club sandwich, OJ, coffee',priority:'Normal',assigned:'F&B Team',reported:'23 Jun 12:15',status:'In Progress'},
+  {id:'HB-OPS-009',guest:'Hans Mueller',room:'212',dept:'Food & Beverage',type:'Minibar Restock',desc:'Beer and soft drinks',priority:'Low',assigned:'F&B Attendant',reported:'23 Jun 11:30',status:'Open'},
+  {id:'HB-OPS-010',guest:'Carlos Silva',room:'304',dept:'Guest Relations',type:'Complaint',desc:'Room not cleaned by 3pm day 2',priority:'High',assigned:'HK Manager',reported:'23 Jun 15:30',status:'In Progress'},
+  {id:'HB-OPS-011',guest:'Walk-in',room:'—',dept:'Guest Relations',type:'Request',desc:'More sunbeds at poolside',priority:'Normal',assigned:'GM',reported:'21 Jun 14:00',status:'Open'},
+  {id:'HB-OPS-012',guest:'Dr. Mendes',room:'405',dept:'Front Office',type:'Late Checkout',desc:'Late checkout until 15:00',priority:'Normal',assigned:'FO Manager',reported:'23 Jun 08:00',status:'Completed'},
+  {id:'HB-OPS-013',guest:'Liu Wei',room:'312',dept:'Housekeeping',type:'Extra Blanket',desc:'Extra blanket and pillow set',priority:'Low',assigned:'Amina C.',reported:'23 Jun 13:00',status:'Open'},
+];
+let _opsF={s:'',d:'',st:'',p:''},_opsPg=1;const OPS_PP=10;
+const DEPT_C={'Housekeeping':'#2563eb','Maintenance':'#7c3aed','Food & Beverage':'#d97706','Front Office':'#059669','Guest Relations':'#dc2626'};
+const ST_S={'Open':'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;','In Progress':'background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;','Completed':'background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;'};
+const PR_S={'Urgent':'background:#fef2f2;color:#dc2626;','High':'background:#fff7ed;color:#c2410c;','Normal':'background:#eff6ff;color:#1d4ed8;','Low':'background:#f0fdf4;color:#166534;'};
+function buildOpsKPIs(){
+  const open=OPS.filter(c=>c.status==='Open').length,prog=OPS.filter(c=>c.status==='In Progress').length;
+  const k=document.getElementById('opsKPIs');if(!k)return;
+  k.innerHTML=[['Open Cases',open,'#dc2626'],['In Progress',prog,'#d97706'],['High / Urgent',OPS.filter(c=>c.priority==='Urgent'||c.priority==='High').length,'#7c3aed'],['Completed Today',OPS.filter(c=>c.status==='Completed').length,'#059669'],['HK Pending',OPS.filter(c=>c.dept==='Housekeeping'&&c.status!=='Completed').length,'#2563eb']].map(([l,v,c])=>`<div class="kpi" style="--kc:${c}"><div class="kpi-l">${l}</div><div class="kpi-v" style="font-size:24px;">${v}</div></div>`).join('');
+  const ob=document.getElementById('opsBadge');if(ob)ob.textContent=(open+prog)||'';
+}
+function getFilteredOps(){return OPS.filter(c=>{const f=_opsF,q=f.s.toLowerCase();if(q&&!JSON.stringify(c).toLowerCase().includes(q))return false;if(f.d&&c.dept!==f.d)return false;if(f.st&&c.status!==f.st)return false;if(f.p&&c.priority!==f.p)return false;return true;});}
+function buildOpsTbl(){
+  buildOpsKPIs();
+  const data=getFilteredOps(),total=data.length,start=(_opsPg-1)*OPS_PP,page=data.slice(start,start+OPS_PP);
+  const tbl=document.getElementById('opsTbl');if(!tbl)return;
+  tbl.innerHTML=page.map(c=>`<tr><td><code style="font-size:10px;color:var(--navy);background:rgba(38,34,98,.08);padding:2px 4px;">${c.id}</code></td><td><strong>${c.guest}</strong></td><td style="font-weight:600;color:var(--navy);">${c.room}</td><td><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:${DEPT_C[c.dept]||'#555'};"><span style="width:6px;height:6px;border-radius:50%;background:${DEPT_C[c.dept]||'#555'};flex-shrink:0;"></span>${c.dept}</span></td><td style="font-size:12px;">${c.type}</td><td style="font-size:12px;max-width:160px;">${c.desc}</td><td><span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:2px;${PR_S[c.priority]||''}">${c.priority}</span></td><td style="font-size:12px;">${c.assigned}</td><td style="font-size:11px;color:var(--mid);">${c.reported}</td><td><span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:2px;${ST_S[c.status]||''}">${c.status}</span></td><td><select onchange="updOps('${c.id}',this.value);this.selectedIndex=0;" style="padding:3px 5px;border:1px solid var(--brd);font-size:11px;background:var(--cream);outline:none;cursor:pointer;"><option value="">Update…</option><option>Open</option><option>In Progress</option><option>Completed</option></select></td></tr>`).join('');
+  const cnt=document.getElementById('opsCount');if(cnt)cnt.textContent='Showing '+(start+1)+'–'+Math.min(start+OPS_PP,total)+' of '+total;
+  const pg=Math.ceil(total/OPS_PP),pgEl=document.getElementById('opsPg');
+  if(pgEl)pgEl.innerHTML=Array.from({length:pg},(_,i)=>`<button style="border:1px solid var(--brd);background:${i+1===_opsPg?'var(--navy)':'#fff'};color:${i+1===_opsPg?'#fff':'inherit'};padding:3px 9px;cursor:pointer;font-family:inherit;font-size:11px;" onclick="_opsPg=${i+1};buildOpsTbl();">${i+1}</button>`).join('');
+}
+function filterOps(k,v){_opsF[k]=v;_opsPg=1;buildOpsTbl();}
+function resetOpsF(){_opsF={s:'',d:'',st:'',p:''};_opsPg=1;document.querySelectorAll('#pg-ops .tsel').forEach(s=>s.value='');const inp=document.querySelector('#pg-ops .tsrch input');if(inp)inp.value='';buildOpsTbl();}
+function updOps(id,st){if(!st)return;const c=OPS.find(x=>x.id===id);if(c){c.status=st;buildOpsTbl();toast(id+' → '+st,'ok');}}
+/* ── POOL ── */
+let poolV=9;const POOL_MAX=80;
+const POOLLG=[{t:'08:15',tp:'Hotel Guest',vis:2,nm:'Silva Family (Rm 201)',amt:0,by:'Reception'},{t:'09:30',tp:'Adult Day Pass',vis:1,nm:'Walk-in',amt:15000,by:'Front Desk'},{t:'10:05',tp:'Adult Day Pass',vis:2,nm:'Walk-in',amt:30000,by:'Pool Desk'},{t:'10:45',tp:'Child (under 12)',vis:3,nm:'Walk-in',amt:24000,by:'Pool Desk'},{t:'11:20',tp:'Hotel Guest + External',vis:1,nm:'Dr. Camará + 1 (Rm 312)',amt:10000,by:'Reception'}];
+function buildPoolKPIs(){
+  const rev=POOLLG.reduce((s,e)=>s+e.amt,0);
+  const k=document.getElementById('poolKPIs');if(!k)return;
+  k.innerHTML=[["Today's Visitors",POOLLG.reduce((s,e)=>s+e.vis,0),'var(--navy)'],["Revenue (XOF)",rev.toLocaleString(),'#059669'],["In Pool Now",poolV,'#2563eb'],["Capacity Left",Math.max(0,POOL_MAX-poolV),'#d97706']].map(([l,v,c])=>`<div class="kpi" style="--kc:${c}"><div class="kpi-l">${l}</div><div class="kpi-v" style="font-size:24px;">${v}</div></div>`).join('');
+  updatePoolCap();
+  const log=document.getElementById('poolLog');if(log)log.innerHTML=POOLLG.map(e=>`<tr><td style="font-size:12px;">${e.t}</td><td>${e.tp}</td><td style="text-align:center;">${e.vis}</td><td style="font-size:12px;">${e.nm}</td><td style="text-align:right;font-weight:600;">${e.amt?'XOF '+e.amt.toLocaleString():'Complimentary'}</td><td style="font-size:12px;color:var(--mid);">${e.by}</td></tr>`).join('');
+}
+function updatePoolCap(){const pct=Math.min(100,Math.round(poolV/POOL_MAX*100));const bar=document.getElementById('poolFill');if(bar){bar.style.width=pct+'%';bar.style.background=pct>80?'#ef4444':pct>60?'#f59e0b':'#10b981';}const disp=document.getElementById('poolCapDisp');if(disp)disp.textContent=poolV+' / '+POOL_MAX;const cv=document.getElementById('poolCV');if(cv)cv.textContent=poolV;}
+function poolIn(){if(poolV>=POOL_MAX){toast('Pool at max capacity!','warn');return;}poolV++;updatePoolCap();toast('Entry — pool: '+poolV+'/'+POOL_MAX,'ok');}
+function poolOut(){if(poolV<=0)return;poolV--;updatePoolCap();toast('Exit — pool: '+poolV+'/'+POOL_MAX,'info');}
+function sellTicket(){const t=document.getElementById('tkt_type');const price=t?parseInt(t.value):0,desc=t?t.options[t.selectedIndex].text.split('—')[0].trim():'Ticket';const n=new Date(),time=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');POOLLG.push({t:time,tp:desc,vis:1,nm:'New sale',amt:price,by:'Reception'});closeM('mTicket');buildPoolKPIs();toast('Ticket sold: '+desc,'ok');}
+/* ── REPORTS ── */
+function buildRpts(){
+  const k=document.getElementById('rptKPIs');if(k)k.innerHTML=[['Occupancy','78.4%','#262262'],['ADR','XOF 218k','#2563eb'],['RevPAR','XOF 171k','#059669'],['Revenue','XOF 28.4M','var(--navy)'],['Guests','247','#d97706']].map(([l,v,c])=>`<div class="kpi" style="--kc:${c}"><div class="kpi-l">${l}</div><div class="kpi-v">${v}</div></div>`).join('');
+  const occ=document.getElementById('occTbl');if(occ)occ.innerHTML=[['Standard (80)',80,68,85,'220,000'],['+ Balcony (50)',50,37,74,'260,000'],['Junior Suite (24)',24,16,67,'380,000'],['Presidential (10)',10,7,70,'650,000']].map(([n,t,o,p,a])=>`<tr><td><strong>${n}</strong></td><td style="text-align:center;">${t}</td><td style="text-align:center;">${o}</td><td style="text-align:center;font-weight:700;color:${p>=80?'#059669':p>=60?'#d97706':'#dc2626'};">${p}%</td><td style="text-align:right;">${a}</td></tr>`).join('');
+  const src=document.getElementById('srcTbl');if(src)src.innerHTML=[['Direct / Hotel',47,'12,400,000',43.6],['Booking.com',31,'7,800,000',27.4],['Corporate',22,'5,900,000',20.7],['Walk-in',12,'2,300,000',8.1],['Travel Agency',3,'600,000',0.2]].map(([n,b,r,s])=>`<tr><td><strong>${n}</strong></td><td style="text-align:center;">${b}</td><td style="text-align:right;">XOF ${r}</td><td style="text-align:center;font-weight:600;">${s}%</td></tr>`).join('');
+  const nat=document.getElementById('natTbl');if(nat)nat.innerHTML=[['Guinea-Bissau',82,196,33.2],['Senegal',41,98,16.6],['France',38,84,15.4],['Portugal',29,67,11.7],['Nigeria',18,41,7.3],['USA',12,28,4.9],['Germany',9,22,3.6],['Others',21,51,7.5]].map(([n,g,ni,p])=>`<tr><td>${n}</td><td style="text-align:center;">${g}</td><td style="text-align:center;">${ni}</td><td style="text-align:center;">${p}%</td></tr>`).join('');
+  const mom=document.getElementById('momTbl');if(mom)mom.innerHTML=[['Occupancy %','78.4%','71.2%','+7.2pp'],['ADR (XOF)','218,500','204,000','+7.1%'],['RevPAR','171,320','145,250','+17.9%'],['Revenue','XOF 28.4M','XOF 24.1M','+17.8%'],['Total Guests','247','218','+13.3%']].map(([m,t,l,c])=>`<tr><td><strong>${m}</strong></td><td style="text-align:right;">${t}</td><td style="text-align:right;color:var(--mid);">${l}</td><td style="text-align:right;"><span style="font-size:10.5px;font-weight:700;color:${c.startsWith('+')?'#059669':'#dc2626'};padding:2px 6px;background:${c.startsWith('+')?'#f0fdf4':'#fef2f2'};border-radius:2px;">${c}</span></td></tr>`).join('');
+}
+/* ── GUEST FEEDBACK ── */
+let FB=[
+  {id:1,guest:'Jean Dubois',src:'Booking.com',room:'Junior Suite',date:'20 Jun 2026',rating:5,clean:5,svc:5,val:4,text:'Exceptional stay. The staff went above and beyond, particularly at check-in. The Junior Suite was spacious and immaculate. Shahrazad restaurant is outstanding — best food in Bissau. Will definitely return.',reply:'Thank you so much, Mr. Dubois. It is always a pleasure welcoming you. We look forward to your next stay.',replied:true},
+  {id:2,guest:'Emily Johnson',src:'TripAdvisor',room:'Standard + Balcony',date:'19 Jun 2026',rating:4,clean:4,svc:5,val:4,text:'Great location and very friendly staff. The balcony view is beautiful. Breakfast was good but could use more variety. Pool is well maintained and not too crowded.',reply:'',replied:false},
+  {id:3,guest:'Anonymous',src:'Google',room:'General / Hotel',date:'15 Jun 2026',rating:3,clean:3,svc:4,val:3,text:'Decent hotel for Bissau. AC in the room was not working properly and it took a day to fix. Staff were apologetic and responsive once reported. Would give 4 stars if the maintenance is improved.',reply:'We sincerely apologise for the AC issue. It has been resolved and our maintenance team has reviewed all units. We hope to welcome you again.',replied:true},
+  {id:4,guest:'Carlos Ferreira',src:'Direct / Email',room:'Junior Suite',date:'18 Jun 2026',rating:5,clean:5,svc:5,val:5,text:'Perfeito em todos os sentidos. A equipa é fantástica e a suite estava impecável. O pequeno-almoço é excelente. Hotel de referência em Bissau.',reply:'',replied:false},
+  {id:5,guest:'Maria Santos',src:'In-house Form',room:'Standard Room',date:'16 Jun 2026',rating:4,clean:5,svc:4,val:4,text:'Very comfortable stay as always. I appreciate the consistency of service at Hala Bissau. The housekeeping team is excellent.',reply:'Thank you for your continued loyalty, Ms. Santos. We are proud to be your home in Bissau.',replied:true},
+];
+let _fbStar=0;
+function setFbStar(v){
+  _fbStar=v;
+  document.querySelectorAll('#fbStarInput .star').forEach((s,i)=>{s.classList.toggle('on',i<v);});
+}
+function buildFbScores(){
+  const total=FB.length,avg=(FB.reduce((s,f)=>s+f.rating,0)/total).toFixed(1);
+  const el=document.getElementById('fbOverallScore');if(el)el.textContent=avg;
+  const se=document.getElementById('fbOverallStars');if(se)se.textContent='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg));
+  const te=document.getElementById('fbTotalCount');if(te)te.textContent=total+' reviews';
+  const tk=document.getElementById('tkRating');if(tk)tk.textContent=avg+' ★';
+  const da=document.getElementById('dashRating');if(da)da.textContent=avg+' ★';
+  // Category averages
+  const cats=[['Cleanliness',FB.map(f=>f.clean||0).filter(Boolean)],['Service',FB.map(f=>f.svc||0).filter(Boolean)],['Location / Value',FB.map(f=>f.val||0).filter(Boolean)],['Overall',FB.map(f=>f.rating)]];
+  const bd=document.getElementById('fbScoreBreakdown');
+  if(bd)bd.innerHTML=cats.map(([name,scores])=>{const avg2=(scores.reduce((s,v)=>s+v,0)/scores.length).toFixed(1);const pct=avg2/5*100;return`<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--mid);">${name}</span><strong style="color:var(--navy);">${avg2}</strong></div><div style="height:6px;background:var(--brd);border-radius:3px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:var(--gold);border-radius:3px;"></div></div></div>`;}).join('');
+  // Source breakdown
+  const srcs={};FB.forEach(f=>{srcs[f.src]=(srcs[f.src]||0)+1;});
+}
+function buildFbList(){
+  const srcF=document.getElementById('fbSrcFilter')?.value||'';
+  const ratF=parseInt(document.getElementById('fbRatingFilter')?.value||0);
+  const filtered=FB.filter(f=>(srcF===''||f.src===srcF)&&(ratF===0||f.rating===ratF));
+  const el=document.getElementById('fbList');if(!el)return;
+  if(!filtered.length){el.innerHTML='<div style="padding:30px;text-align:center;color:var(--mid);font-size:13px;background:var(--sf);border:1px solid var(--brd);">No feedback found for these filters.</div>';return;}
+  el.innerHTML=filtered.map(f=>{
+    const stars='★'.repeat(f.rating)+'☆'.repeat(5-f.rating);
+    const cats=[];if(f.clean)cats.push('Cleanliness: '+f.clean+'★');if(f.svc)cats.push('Service: '+f.svc+'★');if(f.val)cats.push('Value: '+f.val+'★');
+    return`<div class="fbcard"><div class="fbcard-hd"><div><div class="fbcard-name">${f.guest}</div><div class="fbcard-src">${f.src} · ${f.room} · ${f.date}</div>${cats.length?'<div style="font-size:11px;color:var(--mid);margin-top:3px;">'+cats.join(' · ')+'</div>':''}</div><div style="text-align:right;flex-shrink:0;"><div style="font-size:20px;color:var(--gold);line-height:1;">${stars}</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;color:var(--navy);">${f.rating}.0 / 5</div>${f.replied?'<span class="bdg dg" style="margin-top:4px;display:inline-flex;">Replied</span>':'<span class="bdg do" style="margin-top:4px;display:inline-flex;">Needs reply</span>'}</div></div><div class="fbcard-text">"${f.text}"</div>${f.reply?'<div class="fbcard-reply"><strong>Hotel Response:</strong> ${f.reply}</div>':''}<div style="display:flex;gap:7px;margin-top:10px;"><button class="btn bo bsm" onclick="replyFb(${f.id})">${f.replied?'Edit Reply':'Reply'}</button><button class="btn br bsm" onclick="if(confirm('Delete this feedback?')){FB=FB.filter(x=>x.id!=${f.id});buildFbScores();buildFbList();buildDashFb();toast('Deleted','warn');}">Delete</button></div></div>`;
+  }).join('');
+}
+function replyFb(id){const f=FB.find(x=>x.id===id);if(!f)return;const reply=prompt('Hotel response for '+f.guest+':',f.reply||'');if(reply!==null){f.reply=reply;f.replied=!!reply;buildFbList();toast('Reply saved','success');}}
+function buildDashFb(){
+  const el=document.getElementById('dashFB');if(!el)return;
+  const recent=FB.slice(0,3);
+  el.innerHTML=recent.map(f=>`<div style="background:var(--sf);border:1px solid var(--brd);padding:10px 12px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:600;font-size:12.5px;">${f.guest}</span><span style="color:var(--gold);font-size:14px;">${'★'.repeat(f.rating)}</span></div><div style="font-size:11.5px;color:var(--mid);margin-bottom:3px;">${f.src} · ${f.date}</div><div style="font-size:12px;line-height:1.6;color:var(--ch);">"${f.text.substring(0,100)}${f.text.length>100?'…':''}"</div></div>`).join('')+'<button class="btn bo bsm" style="margin-top:2px;" onclick="nav(\'fb\',document.getElementById(\'sbi-fb\'))">View All Feedback</button>';
+}
+function saveFb(){
+  const guest=document.getElementById('fb_guest')?.value.trim()||'Anonymous';
+  if(_fbStar===0){toast('Please select a rating','warn');return;}
+  const newFb={id:FB.length+1,guest,src:document.getElementById('fb_src')?.value||'Direct / Email',room:document.getElementById('fb_room')?.value||'General / Hotel',date:document.getElementById('fb_date')?.value||new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),rating:_fbStar,clean:parseInt(document.getElementById('fb_clean')?.value)||0,svc:parseInt(document.getElementById('fb_svc')?.value)||0,val:parseInt(document.getElementById('fb_val')?.value)||0,text:document.getElementById('fb_text')?.value||'',reply:document.getElementById('fb_reply')?.value||'',replied:!!(document.getElementById('fb_reply')?.value)};
+  FB.unshift(newFb);
+  const badge=document.getElementById('fbBadge');if(badge)badge.textContent=FB.filter(f=>!f.replied).length||'';
+  buildFbScores();buildFbList();buildDashFb();
+  closeM('mNewFb');_fbStar=0;document.querySelectorAll('#fbStarInput .star').forEach(s=>s.classList.remove('on'));
+  toast('Feedback saved from '+guest,'success');
+}
+/* ── INIT ── */
+function init(){
+  buildDash();buildResTable();buildInv();buildCal();buildRcGrid();buildRpTable();
+  buildGuestTbl();buildOpsTbl();buildPoolKPIs();buildRpts();
+  buildFbScores();buildFbList();
+  const badge=document.getElementById('fbBadge');if(badge)badge.textContent=FB.filter(f=>!f.replied).length||'';
+  tick();
+}
+document.addEventListener('DOMContentLoaded',function(){init();initWCM();});
+</script>
+</body>
+</html>
+<script>
+/* ══════════════════════════════════════════
+   WEBSITE CONTENT MANAGER — JS
+══════════════════════════════════════════ */
+
+/* ── DATA ── */
+var WCM_ROOMS = [
+  {id:'r1',name:'Standard Room without Balcony',type:'Standard',beds:'King or Twin',size:'32 sqm',price:'XOF 155,000',desc:'Comfortable and well-appointed room featuring modern amenities, air conditioning, complimentary Wi-Fi, flat-screen TV, and a private bathroom with premium toiletries.',features:['Air Conditioning','Free Wi-Fi','Flat-Screen TV','In-room Safe','Minibar','24h Room Service'],status:'live',published:true},
+  {id:'r2',name:'Standard Room with Balcony',type:'Standard',beds:'King or Twin',size:'36 sqm',price:'XOF 180,000',desc:'Bright, spacious room with a private balcony overlooking the pool and tropical gardens. King or twin bed, air conditioning, minibar, and flat-screen TV.',features:['Private Balcony','Pool View','Air Conditioning','Free Wi-Fi','Minibar','Flat-Screen TV'],status:'live',published:true},
+  {id:'r3',name:'Junior Suite',type:'Suite',beds:'King',size:'54 sqm',price:'XOF 280,000',desc:'Spacious suite featuring a separate lounge area, plush king bed, premium bath products, bathrobes, and an elevated level of in-room amenities for the discerning traveller.',features:['Separate Lounge','Bathrobes & Slippers','Premium Toiletries','King Bed','Walk-in Wardrobe','Espresso Machine'],status:'live',published:true},
+  {id:'r4',name:'Presidential Suite',type:'Presidential',beds:'King',size:'120 sqm',price:'On request',desc:'Our pinnacle of luxury — an expansive private sanctuary spanning 120 square metres, ideal for distinguished guests, heads of state, and special occasions requiring absolute privacy.',features:['120 sqm','Private Terrace','Butler Service','Dining Room','Grand Bathroom','VIP Amenities'],status:'live',published:true},
+];
+
+var WCM_DINING = [
+  {id:'d1',name:'Shahrazad Restaurant',tag:'All-Day Dining',hours:'Open 24 Hours',desc:'All-day dining with a daily breakfast buffet from 07:00 to 11:00 and an extensive à la carte menu featuring international and local West African specialities throughout the day and night.',highlights:'Daily breakfast buffet · International à la carte · Local specialities · 24h room service',status:'live'},
+  {id:'d2',name:'Dragon Restaurant',tag:'Chinese Cuisine',hours:'Open 24 Hours',desc:'Authentic Chinese cuisine crafted by specialist chefs — the only dedicated Chinese restaurant in Guinea-Bissau. An immersive culinary experience in the heart of West Africa.',highlights:'Authentic Chinese à la carte · Specialist kitchen team · Group dining available',status:'live'},
+  {id:'d3',name:'Snack Bar',tag:'Light Bites',hours:'15:00 – 23:00',desc:'Pizzas, sandwiches, burgers, and light refreshments — perfect for a relaxed bite by the pool or gardens in the afternoon and evening.',highlights:'Poolside service · Quick bites · Cold drinks · Snacks',status:'live'},
+  {id:'d4',name:'Bar Lounge',tag:'Cocktails & Coffee',hours:'08:00 – 23:00',desc:'Curated cocktails, fine spirits, fresh juices, and specialty coffee — served in a relaxed and elegant setting from morning through to late evening.',highlights:'Cocktail menu · Fine spirits · Fresh juices · Specialty coffee',status:'live'},
+];
+
+var WCM_EVENTS = [
+  {id:'e1',name:'Nelson Mandela Hall',capacity:'300',layout:'Banquet, Theatre, Classroom, Reception',size:'600 sqm',av:'Full AV, staging, projector, PA system',desc:'Our premier banquet hall — perfect for gala dinners, conferences, product launches, and large receptions. Equipped with professional audio-visual equipment, staging, and a dedicated events team.'},
+  {id:'e2',name:'Amílcar Cabral Hall',capacity:'100',layout:'Banquet, Theatre, Classroom, U-Shape',size:'220 sqm',av:'Full AV, projector, PA system',desc:'A versatile conference hall ideal for seminars, workshops, corporate training, and mid-size meetings. Flexible layout options with natural light and full technological support.'},
+  {id:'e3',name:'Executive Meeting Room',capacity:'12',layout:'Boardroom',size:'40 sqm',av:'TV screen, video conferencing',desc:'An intimate boardroom for confidential executive meetings, private negotiations, and high-level discussions. Fully equipped with AV and concierge service.'},
+  {id:'e4',name:'Outdoor Event Space',capacity:'4,000',layout:'Open Air, Marquee, Ceremony',size:'5,000 sqm',av:'Available on request',desc:"Guinea-Bissau's largest event space — ideal for festivals, large-scale celebrations, product launches, and national events beneath the West African sky."},
+];
+
+var WCM_OFFERS = [
+  {id:'o1',name:'Bed & Breakfast Rate',tag:'Inclusive',headline:'Start Every Day Right',desc:'Enjoy a daily breakfast for two at Shahrazad Restaurant (07:00–11:00) included in your rate. Free cancellation up to 48 hours before arrival.',active:true,validUntil:'31 Dec 2026'},
+  {id:'o2',name:'Advance Purchase — 7 Days',tag:'Best Price',headline:'Book Early, Save More',desc:'Book at least 7 days in advance and receive our best available rate. Non-refundable. Best price guaranteed when booking direct.',active:true,validUntil:'31 Dec 2026'},
+  {id:'o3',name:'Long Stay Package',tag:'Extended',headline:'Stay Longer, Save More',desc:'Guests staying 7 or more consecutive nights receive a preferential rate and complimentary airport transfers. Free cancellation up to 72 hours.',active:true,validUntil:'31 Dec 2026'},
+  {id:'o4',name:'Corporate Rate',tag:'Business',headline:'Your Home Away From Office',desc:"Special negotiated rates for corporate accounts and repeat business travellers. Contact our sales team to arrange your company's corporate agreement.",active:false,validUntil:'31 Dec 2026'},
+];
+
+var WCM_GALLERY = [
+  {id:'g1',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/87576546049.webp?w=600&format=webp',alt:'Hala Bissau Hotel exterior and grounds',section:'Exterior'},
+  {id:'g2',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/97295488557.webp?w=600&format=webp',alt:'Outdoor swimming pool and terrace',section:'Pool'},
+  {id:'g3',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/43225132546.webp?w=600&format=webp',alt:'Standard Room with Balcony',section:'Rooms'},
+  {id:'g4',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/62447543044.webp?w=600&format=webp',alt:'Junior Suite interior',section:'Rooms'},
+  {id:'g5',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/58258538637.webp?w=600&format=webp',alt:'Presidential Suite',section:'Rooms'},
+  {id:'g6',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/33755791628.webp?w=600&format=webp',alt:'Shahrazad Restaurant dining room',section:'Dining'},
+  {id:'g7',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/80933463570.webp?w=600&format=webp',alt:'Dragon Restaurant',section:'Dining'},
+  {id:'g8',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/64571429583.webp?w=600&format=webp',alt:'Nelson Mandela Hall events space',section:'Events'},
+  {id:'g9',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/40567895754.webp?w=600&format=webp',alt:'Tennis court',section:'Amenities'},
+  {id:'g10',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/13657513544.webp?w=600&format=webp',alt:'Fitness centre',section:'Amenities'},
+  {id:'g11',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/36082836886.webp?w=600&format=webp',alt:'Hotel gardens and terrace',section:'Gardens'},
+  {id:'g12',src:'https://static.travelated.com/storage/hotels3/729/7295109/property/49787625082.webp?w=600&format=webp',alt:'Hotel building from outside',section:'Exterior'},
+];
+
+var WCM_SEO = {
+  homeTitle:'Hala Bissau — Luxury Hotel & Aqua Park | Bissau, Guinea-Bissau',
+  homeDesc:'Guinea-Bissau\'s premier five-star hotel. 164 rooms and suites, four dining venues, and world-class event spaces in the heart of Bissau.',
+  homeKeys:'Hala Bissau, hotel Bissau, Guinea-Bissau hotel, luxury hotel Africa, five star hotel Bissau',
+  roomsTitle:'Rooms & Suites — Hala Bissau Hotel',
+  roomsDesc:'164 elegantly appointed rooms and suites — from Standard Rooms to the Presidential Suite. Book direct for the best rate.',
+  diningTitle:'Dining & Bars — Hala Bissau Hotel',
+  diningDesc:'Four dining venues including Shahrazad Restaurant and Dragon Restaurant, open 24 hours. Experience international and authentic Chinese cuisine in Bissau.',
+  eventsTitle:'Meetings & Events — Hala Bissau Hotel',
+  eventsDesc:'World-class event spaces in Guinea-Bissau. Nelson Mandela Hall (300 guests), outdoor venue (4,000 guests), and executive boardroom.',
+  ogImage:'https://static.travelated.com/storage/hotels3/729/7295109/property/87576546049.webp',
+  canonical:'https://hbh198926.github.io/my-website/',
+};
+
+/* ── ROOMS EDITOR ── */
+function buildRoomsEditor() {
+  var el = document.getElementById('roomsEditorList'); if (!el) return;
+  el.innerHTML = WCM_ROOMS.map(function(r, i) {
+    var features = r.features.map(function(f) {
+      return '<div class="chip-item">'+f+'<button class="chip-del" onclick="removeFeature(\''+r.id+'\',\''+f+'\')">×</button></div>';
+    }).join('');
+    return '<div class="ed-card" id="ed-room-'+r.id+'">'
+      +'<div class="ed-card-head">'
+        +'<div class="ed-card-head-title">'+r.type+' — '+r.name+'</div>'
+        +'<div class="ed-card-head-actions">'
+          +(r.published ? '<span class="live-badge">● Live</span>' : '<span class="draft-badge">● Draft</span>')
+          +'<button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;font-size:10px;padding:4px 10px;" onclick="toggleRoomPublish(\''+r.id+'\')">'+( r.published?'Unpublish':'Publish')+'</button>'
+          +'<button class="btn btn-sm" style="background:var(--r);color:#fff;font-size:10px;padding:4px 10px;" onclick="deleteRoom(\''+r.id+'\')">Delete</button>'
+        +'</div>'
+      +'</div>'
+      +'<div class="ed-card-body">'
+        +'<div class="ed-row">'
+          +'<div class="fg"><label>Room Name</label><input class="fi" value="'+r.name+'" onchange="updateRoom(\''+r.id+'\',\'name\',this.value)"></div>'
+          +'<div class="fg"><label>Room Type</label><select class="fi" onchange="updateRoom(\''+r.id+'\',\'type\',this.value)"><option'+(r.type==='Standard'?' selected':'')+'>Standard</option><option'+(r.type==='Suite'?' selected':'')+'>Suite</option><option'+(r.type==='Presidential'?' selected':'')+'>Presidential</option></select></div>'
+        +'</div>'
+        +'<div class="ed-row-3">'
+          +'<div class="fg"><label>Bed Type</label><input class="fi" value="'+r.beds+'" onchange="updateRoom(\''+r.id+'\',\'beds\',this.value)"></div>'
+          +'<div class="fg"><label>Room Size</label><input class="fi" value="'+r.size+'" onchange="updateRoom(\''+r.id+'\',\'size\',this.value)"></div>'
+          +'<div class="fg"><label>Starting Price</label><input class="fi" value="'+r.price+'" onchange="updateRoom(\''+r.id+'\',\'price\',this.value)"></div>'
+        +'</div>'
+        +'<div class="fg" style="margin-bottom:14px;"><label>Description <span class="req">*</span></label><textarea class="fi fi-ta" onchange="updateRoom(\''+r.id+'\',\'desc\',this.value)">'+r.desc+'</textarea></div>'
+        +'<div class="fg"><label>Room Features</label>'
+          +'<div class="chip-list" id="chips-'+r.id+'">'
+            +features
+            +'<button class="chip-add" onclick="promptAddFeature(\''+r.id+'\')">+ Add Feature</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function updateRoom(id, field, val) {
+  var r = WCM_ROOMS.find(function(x){return x.id===id;}); if(r) r[field]=val;
+}
+function toggleRoomPublish(id) {
+  var r = WCM_ROOMS.find(function(x){return x.id===id;});
+  if(r){r.published=!r.published;buildRoomsEditor();toast(r.name+(r.published?' published live':' set to draft'),'ok');}
+}
+function deleteRoom(id) {
+  if(!confirm('Delete this room type?')) return;
+  WCM_ROOMS = WCM_ROOMS.filter(function(x){return x.id!==id;});
+  buildRoomsEditor(); toast('Room type removed','ok');
+}
+function addRoom() {
+  var newId = 'r'+(WCM_ROOMS.length+1);
+  WCM_ROOMS.push({id:newId,name:'New Room Type',type:'Standard',beds:'King',size:'30 sqm',price:'XOF 0',desc:'Enter room description here.',features:['Air Conditioning','Free Wi-Fi'],status:'draft',published:false});
+  buildRoomsEditor();
+  setTimeout(function(){var el=document.getElementById('ed-room-'+newId);if(el)el.scrollIntoView({behavior:'smooth'});},100);
+  toast('New room type added — fill in details and publish','ok');
+}
+function removeFeature(roomId, feat) {
+  var r = WCM_ROOMS.find(function(x){return x.id===roomId;});
+  if(r){r.features=r.features.filter(function(f){return f!==feat;});buildRoomsEditor();}
+}
+function promptAddFeature(roomId) {
+  var feat = prompt('Add feature (e.g. "Jacuzzi"):');
+  if(feat&&feat.trim()){
+    var r=WCM_ROOMS.find(function(x){return x.id===roomId;});
+    if(r){r.features.push(feat.trim());buildRoomsEditor();}
+  }
+}
+function saveRooms() { toast('Rooms & Suites saved and published to website ✓','ok'); }
+
+/* ── DINING EDITOR ── */
+function buildDiningEditor() {
+  var el = document.getElementById('diningEditorList'); if (!el) return;
+  el.innerHTML = WCM_DINING.map(function(d) {
+    return '<div class="ed-card">'
+      +'<div class="ed-card-head">'
+        +'<div class="ed-card-head-title">'+d.tag+' — '+d.name+'</div>'
+        +'<div class="ed-card-head-actions"><span class="live-badge">● Live</span></div>'
+      +'</div>'
+      +'<div class="ed-card-body">'
+        +'<div class="ed-row">'
+          +'<div class="fg"><label>Venue Name</label><input class="fi" value="'+d.name+'" onchange="updateDining(\''+d.id+'\',\'name\',this.value)"></div>'
+          +'<div class="fg"><label>Category / Tag</label><input class="fi" value="'+d.tag+'" onchange="updateDining(\''+d.id+'\',\'tag\',this.value)"></div>'
+        +'</div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Opening Hours</label><input class="fi" value="'+d.hours+'" onchange="updateDining(\''+d.id+'\',\'hours\',this.value)"></div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Description</label><textarea class="fi fi-ta" onchange="updateDining(\''+d.id+'\',\'desc\',this.value)">'+d.desc+'</textarea></div>'
+        +'<div class="fg"><label>Menu Highlights (shown on website)</label><input class="fi" value="'+d.highlights+'" onchange="updateDining(\''+d.id+'\',\'highlights\',this.value)" placeholder="e.g. Breakfast buffet · À la carte · 24h service"></div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function updateDining(id,field,val){var d=WCM_DINING.find(function(x){return x.id===id;});if(d)d[field]=val;}
+
+/* ── EVENTS EDITOR ── */
+function buildEventsEditor() {
+  var el = document.getElementById('eventsEditorList'); if (!el) return;
+  el.innerHTML = WCM_EVENTS.map(function(e) {
+    return '<div class="ed-card">'
+      +'<div class="ed-card-head"><div class="ed-card-head-title">'+e.name+'</div><div class="ed-card-head-actions"><span class="live-badge">● Live</span></div></div>'
+      +'<div class="ed-card-body">'
+        +'<div class="ed-row-3">'
+          +'<div class="fg"><label>Venue Name</label><input class="fi" value="'+e.name+'" onchange="updateEvent(\''+e.id+'\',\'name\',this.value)"></div>'
+          +'<div class="fg"><label>Max Capacity</label><input class="fi" value="'+e.capacity+'" onchange="updateEvent(\''+e.id+'\',\'capacity\',this.value)" placeholder="e.g. 300 guests"></div>'
+          +'<div class="fg"><label>Floor Area</label><input class="fi" value="'+e.size+'" onchange="updateEvent(\''+e.id+'\',\'size\',this.value)"></div>'
+        +'</div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Available Layouts</label><input class="fi" value="'+e.layout+'" onchange="updateEvent(\''+e.id+'\',\'layout\',this.value)" placeholder="e.g. Banquet, Theatre, Classroom"></div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>AV &amp; Equipment</label><input class="fi" value="'+e.av+'" onchange="updateEvent(\''+e.id+'\',\'av\',this.value)"></div>'
+        +'<div class="fg"><label>Description</label><textarea class="fi fi-ta" onchange="updateEvent(\''+e.id+'\',\'desc\',this.value)">'+e.desc+'</textarea></div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function updateEvent(id,field,val){var e=WCM_EVENTS.find(function(x){return x.id===id;});if(e)e[field]=val;}
+
+/* ── OFFERS EDITOR ── */
+function buildOffersEditor() {
+  var el = document.getElementById('offersEditorList'); if (!el) return;
+  el.innerHTML = WCM_OFFERS.map(function(o,i) {
+    return '<div class="ed-card">'
+      +'<div class="ed-card-head">'
+        +'<div class="ed-card-head-title">'+o.tag+' — '+o.name+'</div>'
+        +'<div class="ed-card-head-actions">'
+          +(o.active?'<span class="live-badge">● Active</span>':'<span class="draft-badge">● Inactive</span>')
+          +'<button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;font-size:10px;padding:4px 10px;" onclick="toggleOffer('+i+')">'+( o.active?'Deactivate':'Activate')+'</button>'
+          +'<button class="btn btn-sm" style="background:var(--r);color:#fff;font-size:10px;padding:4px 10px;" onclick="deleteOffer('+i+')">Delete</button>'
+        +'</div>'
+      +'</div>'
+      +'<div class="ed-card-body">'
+        +'<div class="ed-row">'
+          +'<div class="fg"><label>Offer Name</label><input class="fi" value="'+o.name+'" onchange="WCM_OFFERS['+i+'].name=this.value"></div>'
+          +'<div class="fg"><label>Tag / Category</label><input class="fi" value="'+o.tag+'" onchange="WCM_OFFERS['+i+'].tag=this.value"></div>'
+        +'</div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Headline (shown on website)</label><input class="fi" value="'+o.headline+'" onchange="WCM_OFFERS['+i+'].headline=this.value"></div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Description</label><textarea class="fi fi-ta" onchange="WCM_OFFERS['+i+'].desc=this.value">'+o.desc+'</textarea></div>'
+        +'<div class="fg"><label>Valid Until</label><input class="fi" type="date" value="2026-12-31" onchange="WCM_OFFERS['+i+'].validUntil=this.value" style="max-width:180px;"></div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function toggleOffer(i){WCM_OFFERS[i].active=!WCM_OFFERS[i].active;buildOffersEditor();toast(WCM_OFFERS[i].name+(WCM_OFFERS[i].active?' activated':' deactivated'),'ok');}
+function deleteOffer(i){if(!confirm('Delete this offer?'))return;WCM_OFFERS.splice(i,1);buildOffersEditor();toast('Offer removed','ok');}
+function addOffer(){WCM_OFFERS.push({id:'o'+(WCM_OFFERS.length+1),name:'New Offer',tag:'Promotion',headline:'',desc:'',active:false,validUntil:'2026-12-31'});buildOffersEditor();toast('New offer added','ok');}
+
+/* ── GALLERY EDITOR ── */
+function buildGalleryEditor() {
+  var el = document.getElementById('galleryGrid'); if (!el) return;
+  var sections = ['All','Exterior','Rooms','Pool','Dining','Events','Amenities','Gardens'];
+  var filterHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">'
+    + sections.map(function(s,i){return '<button onclick="filterGallery(\''+s+'\',this)" style="padding:4px 12px;font-size:11px;font-weight:600;border:1px solid var(--brd);background:'+(i===0?'var(--navy)':'var(--sf)')+';color:'+(i===0?'#fff':'var(--mid)')+';cursor:pointer;" class="gal-filter">'+s+'</button>';}).join('')
+    + '</div>';
+  var gridHtml = '<div class="gallery-thumb-grid" id="galleryThumbGrid">'
+    + WCM_GALLERY.map(function(g,i){
+        return '<div class="gallery-thumb" id="gt-'+g.id+'">'
+          +'<img src="'+g.src+'" alt="'+g.alt+'" loading="lazy">'
+          +'<div class="gallery-thumb-pos">'+(i+1)+'</div>'
+          +'<div class="gallery-thumb-overlay">'
+            +'<div style="font-size:10px;color:#fff;text-align:center;padding:0 8px;">'+g.alt+'</div>'
+            +'<div style="display:flex;gap:6px;">'
+              +'<button class="gallery-thumb-edit" onclick="editGalleryAlt(\''+g.id+'\')">Edit Alt</button>'
+              +'<button class="gallery-thumb-del" onclick="removeGalleryImg(\''+g.id+'\')">Remove</button>'
+            +'</div>'
+          +'</div>'
+        +'</div>';
+      }).join('')
+    + '</div>';
+  el.innerHTML = filterHtml + gridHtml;
+}
+function filterGallery(section, btn){
+  document.querySelectorAll('.gal-filter').forEach(function(b){b.style.background='var(--sf)';b.style.color='var(--mid)';});
+  btn.style.background='var(--navy)';btn.style.color='#fff';
+  var grid=document.getElementById('galleryThumbGrid'); if(!grid)return;
+  WCM_GALLERY.forEach(function(g,i){
+    var el=document.getElementById('gt-'+g.id);
+    if(el)el.style.display=(section==='All'||g.section===section)?'':'none';
+  });
+}
+function removeGalleryImg(id){if(!confirm('Remove this photo from the gallery?'))return;WCM_GALLERY=WCM_GALLERY.filter(function(g){return g.id!==id;});buildGalleryEditor();toast('Photo removed','ok');}
+function editGalleryAlt(id){var g=WCM_GALLERY.find(function(x){return x.id===id;});if(!g)return;var a=prompt('Edit alt text (for accessibility & SEO):',g.alt);if(a!==null&&a.trim()){g.alt=a.trim();toast('Alt text updated','ok');}}
+function handleGalleryDrop(e){e.preventDefault();document.getElementById('uploadZone').style.borderColor='var(--brd)';toast('Photo uploaded and added to gallery ✓','ok');}
+function galleryFileChosen(inp){if(inp.files&&inp.files.length){toast(inp.files.length+' photo'+(inp.files.length>1?'s':'')+' uploaded ✓','ok');}}
+
+/* ── SEO EDITOR ── */
+function buildSEOEditor() {
+  var el = document.getElementById('seoEditorBody'); if (!el) return;
+  var pages = [
+    {key:'home',label:'Homepage'},
+    {key:'rooms',label:'Rooms & Suites page'},
+    {key:'dining',label:'Dining page'},
+    {key:'events',label:'Meetings & Events page'},
+  ];
+  var score = 72;
+  el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">'
+    +'<div>'
+    + pages.map(function(p){
+        var title = WCM_SEO[p.key+'Title']||'';
+        var desc = WCM_SEO[p.key+'Desc']||'';
+        var titleLen = title.length;
+        var descLen = desc.length;
+        var titleOk = titleLen>=50&&titleLen<=60;
+        var descOk = descLen>=120&&descLen<=160;
+        return '<div class="ed-card" style="margin-bottom:14px;">'
+          +'<div class="ed-card-head"><div class="ed-card-head-title">'+p.label+'</div>'
+            +'<div class="ed-card-head-actions"><span class="'+(titleOk&&descOk?'live-badge':'draft-badge')+'">'+( titleOk&&descOk?'● Good':'● Needs work')+'</span></div></div>'
+          +'<div class="ed-card-body">'
+            +'<div class="fg" style="margin-bottom:10px;">'
+              +'<label>Page Title <span style="font-weight:400;color:var(--mid);">(50–60 characters ideal)</span></label>'
+              +'<input class="fi" value="'+title+'" id="seo-t-'+p.key+'" onchange="WCM_SEO[\''+p.key+'Title\']=this.value;updateCharCount(\'seo-t-'+p.key+'\',\'cc-t-'+p.key+'\',50,60)" oninput="updateCharCount(\'seo-t-'+p.key+'\',\'cc-t-'+p.key+'\',50,60)">'
+              +'<div class="char-count '+(titleLen>60?'over':titleLen<50?'warn':'')+'" id="cc-t-'+p.key+'">'+titleLen+' / 60 characters</div>'
+            +'</div>'
+            +'<div class="fg">'
+              +'<label>Meta Description <span style="font-weight:400;color:var(--mid);">(120–160 characters ideal)</span></label>'
+              +'<textarea class="fi fi-ta" style="min-height:60px;" id="seo-d-'+p.key+'" onchange="WCM_SEO[\''+p.key+'Desc\']=this.value;updateCharCount(\'seo-d-'+p.key+'\',\'cc-d-'+p.key+'\',120,160)" oninput="updateCharCount(\'seo-d-'+p.key+'\',\'cc-d-'+p.key+'\',120,160)">'+desc+'</textarea>'
+              +'<div class="char-count '+(descLen>160?'over':descLen<120?'warn':'')+'" id="cc-d-'+p.key+'">'+descLen+' / 160 characters</div>'
+            +'</div>'
+            +'<div style="background:#f0f9ff;border:1px solid #bae6fd;padding:10px 12px;margin-top:12px;">'
+              +'<div style="font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#075985;margin-bottom:5px;">Google Preview</div>'
+              +'<div style="font-size:13px;color:#1a0dab;margin-bottom:2px;font-weight:500;">'+title.substring(0,60)+'</div>'
+              +'<div style="font-size:11.5px;color:#006621;margin-bottom:2px;">hbh198926.github.io/my-website</div>'
+              +'<div style="font-size:12px;color:#545454;line-height:1.5;">'+desc.substring(0,160)+'</div>'
+            +'</div>'
+          +'</div>'
+        +'</div>';
+      }).join('')
+    +'<div class="ed-card" style="margin-bottom:14px;">'
+      +'<div class="ed-card-head"><div class="ed-card-head-title">Global SEO Settings</div></div>'
+      +'<div class="ed-card-body">'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Keywords</label><input class="fi" value="'+WCM_SEO.homeKeys+'" onchange="WCM_SEO.homeKeys=this.value"></div>'
+        +'<div class="fg" style="margin-bottom:12px;"><label>Canonical URL</label><input class="fi" value="'+WCM_SEO.canonical+'" onchange="WCM_SEO.canonical=this.value"></div>'
+        +'<div class="fg"><label>OG Image URL (for social sharing)</label><input class="fi" value="'+WCM_SEO.ogImage+'" onchange="WCM_SEO.ogImage=this.value"></div>'
+      +'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div>'
+      +'<div class="ed-card">'
+        +'<div class="ed-card-head"><div class="ed-card-head-title">SEO Score</div></div>'
+        +'<div class="ed-card-body">'
+          +'<div style="font-family:\'Playfair Display\',serif;font-size:36px;color:var(--navy);text-align:center;margin:10px 0 4px;">'+score+'<span style="font-size:18px;color:var(--mid);">/100</span></div>'
+          +'<div class="seo-score"><div class="seo-score-fill" style="width:'+score+'%;background:'+(score>=70?'var(--g)':score>=50?'var(--o)':'var(--r)')+'"></div></div>'
+          +'<div style="font-size:11px;color:var(--mid);text-align:center;margin-top:6px;">'+(score>=70?'Good — keep improving':'Needs improvement')+'</div>'
+          +'<div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">'
+            +'<div style="font-size:11px;display:flex;gap:7px;align-items:center;"><span style="color:var(--g);">✓</span>Hotel name in all page titles</div>'
+            +'<div style="font-size:11px;display:flex;gap:7px;align-items:center;"><span style="color:var(--g);">✓</span>Unique descriptions per page</div>'
+            +'<div style="font-size:11px;display:flex;gap:7px;align-items:center;"><span style="color:var(--o);">!</span>Some titles too long (>60 chars)</div>'
+            +'<div style="font-size:11px;display:flex;gap:7px;align-items:center;"><span style="color:var(--r);">✗</span>Missing alt text on 3 images</div>'
+            +'<div style="font-size:11px;display:flex;gap:7px;align-items:center;"><span style="color:var(--r);">✗</span>No structured data (Schema.org)</div>'
+          +'</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="ed-card" style="margin-top:12px;">'
+        +'<div class="ed-card-head"><div class="ed-card-head-title">Quick Wins</div></div>'
+        +'<div class="ed-card-body" style="font-size:12px;color:var(--mid);line-height:1.7;">'
+          +'Fix image alt texts in the Gallery editor to improve score by +8 points.'
+          +'<div style="margin-top:8px;">Add "Bissau" and "Guinea-Bissau" to all page titles for local search ranking.</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
+}
+function updateCharCount(inputId,countId,min,max){
+  var inp=document.getElementById(inputId);var cnt=document.getElementById(countId);
+  if(!inp||!cnt)return;
+  var len=inp.value.length;
+  cnt.textContent=len+' / '+max+' characters';
+  cnt.className='char-count'+(len>max?' over':len<min?' warn':'');
+}
+function saveSEO(){toast('SEO meta tags saved and published ✓','ok');}
+
+/* ── INIT WCM (called from main init) ── */
+function initWCM() {
+  buildRoomsEditor();
+  buildDiningEditor();
+  buildEventsEditor();
+  buildOffersEditor();
+  buildGalleryEditor();
+  buildSEOEditor();
+}
+</script>
